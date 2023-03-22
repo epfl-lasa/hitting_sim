@@ -7,7 +7,7 @@ import ellipse
 
 
 
-hf = h5py.File('Data/data2.h5', 'r')
+hf = h5py.File('Data/data_good.h5', 'r')
 
 # Syntax
 parameters = hf['my_data']['params'][:]         #Hitting parameters        (input)
