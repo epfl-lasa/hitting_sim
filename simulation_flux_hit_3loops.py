@@ -45,23 +45,23 @@ box_orientation_init = box_position_orientation[1]
 X_ref_grid = f.des_hitting_point_grid(box, box_position_init, 0, 5)
 
 # p_des grid
-p_des_grid = np.linspace(0.2,1,2)
+p_des_grid = np.linspace(0.5,1,2)
 
 # Velocity grid
-h_dir_grid = np.linspace(0.2,1,2)
+theta_grid = np.linspace((np.pi)/2 - 1,(np.pi)/2 + 1,2)
 ########################################################################
 
-params_dataset = group.create_dataset("params", (len(X_ref_grid)*len(p_des_grid)*len(h_dir_grid), 6), dtype='f')
-box_pos_dataset = group.create_dataset("box_pos", (len(X_ref_grid)*len(p_des_grid)*len(h_dir_grid), 3), dtype='f')
+params_dataset = group.create_dataset("params", (len(X_ref_grid)*len(p_des_grid)*len(theta_grid), 6), dtype='f')
+box_pos_dataset = group.create_dataset("box_pos", (len(X_ref_grid)*len(p_des_grid)*len(theta_grid), 3), dtype='f')
 i = 0
 
-for h_dir1 in h_dir_grid:
-    print("h_dir: ", h_dir1)
+for theta in theta_grid:
+    print("theta: ", theta)
     for p_des in p_des_grid:
         print("p_des: ", p_des)
         for X_ref in X_ref_grid:
             
-            h_dir = np.array([0, h_dir1, 0]) 
+            h_dir = np.array([np.cos(theta), np.sin(theta), 0]) 
             
             #print("X_ref: ", X_ref)
         

@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import ellipse
 
 
-
 hf = h5py.File('Data/data3.h5', 'r')
 
 # Syntax
@@ -28,7 +27,7 @@ ax.scatter(x, y, s=20, cmap='viridis');
 ax.plot(0.5,0.3,marker='+',color='g')
 
 # GMM
-n_components=2
+n_components=3
 
 gmm = GaussianMixture(n_components,covariance_type='full', random_state=0).fit(data)
 
@@ -40,6 +39,6 @@ for i in range(n_components):
 plt.show()
 
 
-
+print(gmm.bic(data))
 
 hf.close()

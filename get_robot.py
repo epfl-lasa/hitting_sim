@@ -16,8 +16,8 @@ class sim_robot_env:
         startPos2 = [0,0.8,0]
         startOrientation = p.getQuaternionFromEuler([0, 0, 0])
         startOrientation2 = p.getQuaternionFromEuler([0, 0, 0])
-        p.setGravity(0, 0, 0)
-        p.setTimeStep(0.001)
+        p.setGravity(0, 0, -9.81)
+        p.setTimeStep(0.01)
         p.setRealTimeSimulation(use_sim)
         p.resetDebugVisualizerCamera(cameraDistance=1.60, cameraYaw=200, cameraPitch=-25.00,
                                             cameraTargetPosition=[0, 0, 0])
