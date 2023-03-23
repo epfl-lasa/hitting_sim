@@ -11,7 +11,7 @@ from iiwa_environment import physics as phys
 import functions as f
 
 
-hf = h5py.File('Data/data2.h5', 'w')
+hf = h5py.File('Data/data3.h5', 'w')
 group = hf.create_group("my_data")
 
 
@@ -45,10 +45,10 @@ box_orientation_init = box_position_orientation[1]
 X_ref_grid = f.des_hitting_point_grid(box, box_position_init, 0, 5)
 
 # p_des grid
-p_des_grid = np.linspace(0.5,1,2)
+p_des_grid = np.linspace(0.2,1,2)
 
 # Velocity grid
-h_dir_grid = np.linspace(0.5,1,2)
+h_dir_grid = np.linspace(0.2,1,2)
 ########################################################################
 
 params_dataset = group.create_dataset("params", (len(X_ref_grid)*len(p_des_grid)*len(h_dir_grid), 6), dtype='f')
@@ -56,9 +56,9 @@ box_pos_dataset = group.create_dataset("box_pos", (len(X_ref_grid)*len(p_des_gri
 i = 0
 
 for h_dir1 in h_dir_grid:
-    print(h_dir1)
+    print("h_dir: ", h_dir1)
     for p_des in p_des_grid:
-        print(p_des)
+        print("p_des: ", p_des)
         for X_ref in X_ref_grid:
             
             h_dir = np.array([0, h_dir1, 0]) 
@@ -72,7 +72,7 @@ for h_dir1 in h_dir_grid:
             is_hit = False
         
             # take some time
-            time.sleep(1)
+            time.sleep(1)    # !!!!
         
             # initialise the time
             time_init = time.time()

@@ -7,7 +7,7 @@ from functions import get_stein_divergence
 class sim_robot_env:
     def __init__(self, use_sim, box_object):
 
-        self.physicsClient = p.connect(p.GUI)
+        self.physicsClient = p.connect(p.GUI) #direct FOR NO INTERFACE
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.resetSimulation()
         plane = p.loadURDF("plane_transparent.urdf")
@@ -16,14 +16,14 @@ class sim_robot_env:
         startPos2 = [0,0.8,0]
         startOrientation = p.getQuaternionFromEuler([0, 0, 0])
         startOrientation2 = p.getQuaternionFromEuler([0, 0, 0])
-        p.setGravity(0, 0, -9.81)
+        p.setGravity(0, 0, 0)
         p.setTimeStep(0.001)
         p.setRealTimeSimulation(use_sim)
         p.resetDebugVisualizerCamera(cameraDistance=1.60, cameraYaw=200, cameraPitch=-25.00,
                                             cameraTargetPosition=[0, 0, 0])
 
         self.robot = p.loadURDF("kuka_iiwa/model.urdf", startPos, startOrientation, useFixedBase=1)
-        self.robot2 = p.loadURDF("kuka_iiwa/model.urdf", startPos2, startOrientation2, useFixedBase=1)
+        #self.robot2 = p.loadURDF("kuka_iiwa/model.urdf", startPos2, startOrientation2, useFixedBase=1)
         '''
         Create a scene too
         the environment with the box and table for the different scenarios I would like in the simulation
@@ -34,9 +34,9 @@ class sim_robot_env:
         self.table = p.loadURDF("descriptions/robot_descriptions/objects_description/objects/table.urdf",
                            [1.15, 0.45, 0.0], tableOrientation, globalScaling=1.0, useFixedBase=1)
         p.changeDynamics(self.box, -1, mass=box_object.mass, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
-                         spinningFriction=0.02, restitution=0, lateralFriction=0.1)
+                         spinningFriction=0.02, restitution=0, lateralFriction=0.3)
         p.changeDynamics(self.table, 1, mass=10, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
-                         spinningFriction=0.02, restitution=0, lateralFriction=0.1)
+                         spinningFriction=0.02, restitution=0, lateralFriction=0.3)
 
         
         # What is all that?

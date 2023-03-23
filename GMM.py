@@ -7,7 +7,7 @@ import ellipse
 
 
 
-hf = h5py.File('Data/data_good.h5', 'r')
+hf = h5py.File('Data/data3.h5', 'r')
 
 # Syntax
 parameters = hf['my_data']['params'][:]         #Hitting parameters        (input)
@@ -28,7 +28,7 @@ ax.scatter(x, y, s=20, cmap='viridis');
 ax.plot(0.5,0.3,marker='+',color='g')
 
 # GMM
-n_components=5
+n_components=2
 
 gmm = GaussianMixture(n_components,covariance_type='full', random_state=0).fit(data)
 

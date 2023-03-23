@@ -14,8 +14,10 @@ def plot_ellipse(mean, covariance,ax):
     rotation = np.degrees(np.arctan2(*eigenvectors[::-1, 0]))
     
     # plot the ellipse
+    # Sigma 1
     ellipse1 = Ellipse(xy=mean, width=width, height=height, angle=rotation, edgecolor='r', fc='None', lw=2)
     ax.add_patch(ellipse1)
+    # Sigma 2
     ellipse2 = Ellipse(xy=mean, width=2*width, height=2*height, angle=rotation, edgecolor='b', fc='None', lw=2)
     ax.add_patch(ellipse2)
     ax.scatter(mean[0], mean[1], marker='+', s=100, color='r')
