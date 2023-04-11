@@ -10,7 +10,7 @@ def plot_ellipse(mean, covariance,ax):
     # generate points on the ellipse boundary
     theta = np.linspace(0, 2*np.pi, 100)
     eigenvalues, eigenvectors = np.linalg.eigh(covariance)
-    width, height = 2*np.sqrt(eigenvalues)
+    width, height = 2*np.sqrt(eigenvalues)                      #np.abs?
     rotation = np.degrees(np.arctan2(*eigenvectors[::-1, 0]))
     
     # plot the ellipse

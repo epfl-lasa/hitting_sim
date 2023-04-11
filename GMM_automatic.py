@@ -40,7 +40,7 @@ param_grid = {
     "covariance_type": ["full"],        # We can put this"covariance_type": ["spherical", "tied", "diag", "full"]
 }                                       # but shape of grid_search.best_estimator_.covariances_ changes 
 grid_search = GridSearchCV(
-    GaussianMixture(), param_grid=param_grid, scoring=gmm_bic_score
+    GaussianMixture(), param_grid=param_grid, scoring=gmm_bic_score  #initialization in GaussianMixture
 )
 
 
@@ -78,13 +78,18 @@ point = [0.0, 0.0]
 
 inn = 0
 gaussians = []
+means = []
+covariances = []
 for i in range(n_components):
     mean = grid_search.best_estimator_.means_[i][6:8]
     covariance = grid_search.best_estimator_.covariances_[i][6:8,6:8]
+
+    means.append(mean)
+    covariances.append(covariance)
+
     ellipse.plot_ellipse(mean,covariance,ax)
     # create Gaussian distributions
     gaussians.append(multivariate_normal(mean=mean, cov=covariance))
-
     # Check if point is within 1-sigma
     if is_within_sigma(point, mean, covariance,2): # <2 for 2-sigma
         inn = 1
@@ -102,14 +107,90 @@ pdf_value_sum = 0
 for gaussian in gaussians:
     pdf_value_sum += gaussian.pdf(point)
 
-#pdf_value = pdf_value_sum/n_components
-#print(pdf_value)
 
-# Decide if point is within reachable space or not (maybe if within 1-sigma)
-# Mahalanobis distance
-#md = np.sqrt(np.sum(np.dot((point - mean), np.linalg.inv(covariance)) * (point - mean), axis=0))
-#print(md)
 
+
+
+# Check for best angle theta to reach point Xm
+Xm = [0.0,0.1]
+ax.scatter(Xm[0],Xm[1], s=100, marker='+',color='b', label ='Xm')
+
+
+max_prob = 0
+max_theta = 0
+
+# Sample theta from 0 to 2pi
+# Rotate mean and covariance
+for theta in np.linspace(0, 2*np.pi, num = 20):
+    # Rotate around point (0.5,0.3) different than origin
+    P = np.array([0.5,0.3])
+
+    T1 = np.eye(3)
+    T1[:2, 2] = -P
+
+    R = np.array([[np.cos(theta), -np.sin(theta), 0],
+                [np.sin(theta), np.cos(theta), 0],
+                [0, 0, 1]])
+
+    T2 = np.eye(3)
+    T2[:2, 2] = P
+
+    Transf = T2 @ R @ T1
+    RR = R[:2,:2]
+
+
+    new_gaussians = []
+    for i in range(n_components):
+        mean = np.ones(3)
+        mean[:2] = means[i]
+        
+        new_mean = Transf @ mean
+        new_mean = new_mean[:2]
+
+        covariance =  covariances[i]
+        new_covariance = RR @ covariance @ RR.T
+
+        new_gaussians.append(multivariate_normal(mean=new_mean, cov=new_covariance))
+
+
+
+    pdf_value_sum = 0
+    for gaussian in new_gaussians:
+        pdf_value_sum += gaussian.pdf(Xm)
+
+    if pdf_value_sum > max_prob:
+        max_prob = pdf_value_sum
+        max_theta = theta
+
+
+T1 = np.eye(3)
+T1[:2, 2] = -P
+
+R = np.array([[np.cos(max_theta), -np.sin(max_theta), 0],
+            [np.sin(max_theta), np.cos(max_theta), 0],
+            [0, 0, 1]])
+
+T2 = np.eye(3)
+T2[:2, 2] = P
+
+Transf = T2 @ R @ T1
+RR = R[:2,:2]
+
+
+new_gaussians = []
+for i in range(n_components):
+    mean = np.ones(3)
+    mean[:2] = means[i]
+    
+    new_mean = Transf @ mean
+    new_mean = new_mean[:2]
+
+    covariance =  covariances[i]
+    new_covariance = RR @ covariance @ RR.T
+    ellipse.plot_ellipse(new_mean,new_covariance,ax)
+
+
+print(max_theta)
 
 # x y axis name and title
 plt.xlabel('X-axis')
@@ -118,6 +199,9 @@ plt.title('Poking reachable space')
 
 ax.legend()
 plt.show()
+
+
+
 
 
 hf.close()
