@@ -7,7 +7,7 @@ from functions import get_stein_divergence
 class sim_robot_env:
     def __init__(self, use_sim, box_object):
 
-        self.physicsClient = p.connect(p.GUI) #direct FOR NO INTERFACE
+        self.physicsClient = p.connect(p.GUI) #DIRECT for no interface - GUI for interface
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.resetSimulation()
         plane = p.loadURDF("plane_transparent.urdf")
@@ -29,10 +29,10 @@ class sim_robot_env:
         the environment with the box and table for the different scenarios I would like in the simulation
         '''
         self.box = p.loadURDF("descriptions/robot_descriptions/objects_description/objects/simple_box.urdf",
-                              [0.5, 0.3, 0.5], globalScaling=1.0, useFixedBase=0)
+                              [0.6, 0.0, 0.5], globalScaling=1.0, useFixedBase=0)
         tableOrientation = p.getQuaternionFromEuler([0, 0, math.pi / 2])
         self.table = p.loadURDF("descriptions/robot_descriptions/objects_description/objects/table.urdf",
-                           [1.15, 0.45, 0.0], tableOrientation, globalScaling=1.0, useFixedBase=1)
+                           [2.0, 0.0, 0.0], tableOrientation, globalScaling=1.0, useFixedBase=1)
         p.changeDynamics(self.box, -1, mass=box_object.mass, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
                          spinningFriction=0.02, restitution=0, lateralFriction=0.3)
         p.changeDynamics(self.table, 1, mass=10, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
