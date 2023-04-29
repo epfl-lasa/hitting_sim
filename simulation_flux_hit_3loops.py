@@ -11,7 +11,7 @@ from iiwa_environment import physics as phys
 import functions as f
 
 
-hf = h5py.File('Data/data_good4.h5', 'w')
+hf = h5py.File('Data/data_pres.h5', 'w')
 group = hf.create_group("my_data")
 
 
@@ -45,11 +45,11 @@ box_orientation_init = box_position_orientation[1]
 X_ref_grid = f.des_hitting_point_grid(box, box_position_init, 0, 5)
 
 # p_des grid
-p_des_grid = np.linspace(0.3,1,5)
+p_des_grid = np.linspace(0.9,1,2)
 
 # Velocity grid
 #theta_grid = np.linspace((np.pi)/4,3*(np.pi)/4,2)
-theta_grid = np.linspace(-(np.pi)/3,(np.pi)/3,5)
+theta_grid = np.linspace(-(np.pi)/10,(np.pi)/10,2)
 
 ########################################################################
 

@@ -22,6 +22,12 @@ def is_within_sigma(point, mean, covariance,nb_sigma=2):
     elif nb_sigma==2:
         threshold = np.sqrt(chi2.ppf(0.95, k))
 
+    print("maha")
+    print(mahalanobis_dist)
+    print("thresh")
+    print(threshold)
+
+
     # Compare the Mahalanobis distance to the threshold value
     if mahalanobis_dist <= threshold:
         return True
@@ -73,10 +79,11 @@ n_components = grid_search.best_estimator_.n_components
 #gmm = GaussianMixture(n_components,covariance_type='full', random_state=0, init_params="kmeans").fit(data)
 
 # Define specific point
-point = [0.0, 0.0]
-
+point = [0.3, 0.8]
+p2 = [0.5, 1.1]
 
 inn = 0
+in2 = 0
 gaussians = []
 means = []
 covariances = []
@@ -93,6 +100,8 @@ for i in range(n_components):
     # Check if point is within 1-sigma
     if is_within_sigma(point, mean, covariance,2): # <2 for 2-sigma
         inn = 1
+    if is_within_sigma(p2, mean, covariance,2): # <2 for 2-sigma
+        in2 = 1
 
 
 if inn:
@@ -102,7 +111,14 @@ else:
 
 inn = 0
 
-# Calculate sum of PDFs at a point
+if in2:
+    print("Point is inside the reachable space")
+else:
+    print("Point is outside the reachable space")
+
+in2 = 0
+
+# # Calculate sum of PDFs at a point
 pdf_value_sum = 0
 for gaussian in gaussians:
     pdf_value_sum += gaussian.pdf(point)
@@ -113,7 +129,7 @@ for gaussian in gaussians:
 
 # Check for best angle theta to reach point Xm
 Xm = [0.0,0.1]
-ax.scatter(Xm[0],Xm[1], s=100, marker='+',color='b', label ='Xm')
+ax.scatter(Xm[0],Xm[1], s=100, marker='+',color='b', label ='Target final position')
 
 
 max_prob = 0
@@ -121,7 +137,7 @@ max_theta = 0
 
 # Sample theta from 0 to 2pi
 # Rotate mean and covariance
-for theta in np.linspace(0, 2*np.pi, num = 20):
+for theta in np.linspace(0, 2*np.pi, num = 100):
     # Rotate around point (0.5,0.3) different than origin
     P = np.array([0.5,0.3])
 
@@ -195,7 +211,7 @@ print(max_theta)
 # x y axis name and title
 plt.xlabel('X-axis')
 plt.ylabel('Y-axis')
-plt.title('Poking reachable space')
+plt.title('Object reachable space')
 
 ax.legend()
 plt.show()
