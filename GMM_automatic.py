@@ -87,12 +87,15 @@ in2 = 0
 gaussians = []
 means = []
 covariances = []
+weights = []
 for i in range(n_components):
     mean = grid_search.best_estimator_.means_[i][6:8]
     covariance = grid_search.best_estimator_.covariances_[i][6:8,6:8]
+    weight = grid_search.best_estimator_.weights_[i]
 
     means.append(mean)
     covariances.append(covariance)
+    weights.append(weight)
 
     ellipse.plot_ellipse(mean,covariance,ax)
     # create Gaussian distributions
@@ -102,6 +105,10 @@ for i in range(n_components):
         inn = 1
     if is_within_sigma(p2, mean, covariance,2): # <2 for 2-sigma
         in2 = 1
+
+print("means", means)
+print("covariances", covariances)
+print("weights", weights)
 
 
 if inn:
@@ -121,7 +128,7 @@ in2 = 0
 # # Calculate sum of PDFs at a point
 pdf_value_sum = 0
 for gaussian in gaussians:
-    pdf_value_sum += gaussian.pdf(point)
+    pdf_value_sum += weights[i]*gaussian.pdf(point)
 
 
 
@@ -172,7 +179,7 @@ for theta in np.linspace(0, 2*np.pi, num = 100):
 
     pdf_value_sum = 0
     for gaussian in new_gaussians:
-        pdf_value_sum += gaussian.pdf(Xm)
+        pdf_value_sum += weights[i]*gaussian.pdf(Xm)
 
     if pdf_value_sum > max_prob:
         max_prob = pdf_value_sum

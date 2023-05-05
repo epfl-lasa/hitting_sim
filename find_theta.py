@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import ellipse
 
 
+#WEIGHTS OF COMPONENTS!!!!!!
+
 def fun(theta):
     f = 0
     R = np.array([[np.cos(theta), -np.sin(theta)],
