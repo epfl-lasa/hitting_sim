@@ -107,23 +107,23 @@ def find_sol(environment,x_limits,y_limits):#P,Xf,means2, covariances2,n_compone
 
     # I'll have to verify if guess is within constraints or not
     #bnds = Bounds([0], [2*np.pi])
-    threshold = 5
+    threshold = 2
     
 
 
     if environment:
         cons = ({'type': 'ineq', 'fun': lambda x:  integral_intersection_area(x) - threshold},
-                {'type': 'ineq', 'fun': lambda x:  x[1]-x_limits[0]},
-                {'type': 'ineq', 'fun': lambda x:  -x[1]+x_limits[1]},
-                {'type': 'ineq', 'fun': lambda x:  x[0]-y_limits[0]},
-                {'type': 'ineq', 'fun': lambda x:  -x[0]+y_limits[1]})
+                {'type': 'ineq', 'fun': lambda x:  x[0]-x_limits[0] },
+                {'type': 'ineq', 'fun': lambda x:  -x[0]+x_limits[1] if (x[1]<y_limits[1]) else -x[0]+x_limits[2]},
+                {'type': 'ineq', 'fun': lambda x:  x[1]-y_limits[0] if(x[0]<x_limits[1]) else x[1]-y_limits[1]},
+                {'type': 'ineq', 'fun': lambda x:  -x[1]+y_limits[2]})
 
     else:
         cons = ({'type': 'ineq', 'fun': lambda x:  integral_intersection_area(x) - threshold})
 
 
 
-    guess = [0.0,0.6,3*np.pi/2,0.0]
+    guess = [0.0,0.3,3*np.pi/2,3*np.pi/2]
     #guess = [0.75,0.5,3*np.pi/2,3*np.pi/2]
     #guess = [0,0,0,0]
     result = minimize(fun, guess, method='COBYLA', constraints=cons)#, options={'tol': 1e-200}) # bounds= bnds) 
@@ -132,9 +132,6 @@ def find_sol(environment,x_limits,y_limits):#P,Xf,means2, covariances2,n_compone
 
     #result = basinhopping(fun,0, niter=500) #changing niter to avoid local minimum
     return result.x
-
-P = np.array([0.0,0.0])
-Xf = [0.7,0.6]
 
 
 n_components = 2
@@ -168,8 +165,11 @@ weights2 = np.array([0.27344326491,
                     0.7265567351])
 
 
-x_limits = [-0.25, 0.25]  #[-0.25, 0.5]
-y_limits = [0.42, 0.8]
+P = np.array([0.0,0.0])
+Xf = [0.7,0.3]
+
+x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
+y_limits = [-0.2, 0.2, 0.4]
 environment = True
 
 X = find_sol(environment, x_limits, y_limits)
@@ -191,12 +191,12 @@ ax.scatter(Xf[0],Xf[1], s=100, marker='+',color='k', label ='Xf')
 ax.scatter(X[0],X[1], s=100, marker='+',color='b', label ='Xm')
 
 if environment:
-    ax.plot(x_limits[0]*np.ones(20),np.linspace(-0.2,y_limits[1],20),color='k')
-    ax.plot(x_limits[1]*np.ones(20),np.linspace(-0.2,y_limits[0],20),color='k')
-    ax.plot(np.linspace(x_limits[0],Xf[0]+0.2,20),y_limits[1]*np.ones(20),color='k')
-    ax.plot(np.linspace(x_limits[1],Xf[0]+0.2,20),y_limits[0]*np.ones(20),color='k')
-    ax.plot(np.linspace(x_limits[0],x_limits[1],20),-0.2*np.ones(20),color='k')
-    ax.plot((Xf[0]+0.2)*np.ones(20),np.linspace(y_limits[0],y_limits[1],20),color='k', label ='Table')
+    ax.plot(x_limits[0]*np.ones(20),np.linspace(y_limits[0],y_limits[2],20),color='k')
+    ax.plot(x_limits[1]*np.ones(20),np.linspace(y_limits[0],y_limits[1],20),color='k')
+    ax.plot(x_limits[2]*np.ones(20),np.linspace(y_limits[1],y_limits[2],20),color='k')    
+    ax.plot(np.linspace(x_limits[0],x_limits[2],20),y_limits[2]*np.ones(20),color='k')
+    ax.plot(np.linspace(x_limits[1],x_limits[2],20),y_limits[1]*np.ones(20),color='k')
+    ax.plot(np.linspace(x_limits[0],x_limits[1],20),y_limits[0]*np.ones(20),color='k', label ='Table')
 
 R1 = np.array([[np.cos(X[3]), -np.sin(X[3])],
             [np.sin(X[3]), np.cos(X[3])]])   
