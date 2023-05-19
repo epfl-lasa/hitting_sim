@@ -187,8 +187,8 @@ def constraints(Xf, x_limits, y_limits, direction):
     cons.append({'type': 'ineq', 'fun': lambda x: table_consy_1(x,x_limits,y_limits,direction)})
     cons.append({'type': 'ineq', 'fun': lambda x: table_consy_2(x,x_limits,y_limits,direction)})
 
-    cons.append({'type': 'ineq', 'fun': lambda x:  -x[2]+np.pi})
-    cons.append({'type': 'ineq', 'fun': lambda x:  x[2]+np.pi})
+    #cons.append({'type': 'ineq', 'fun': lambda x:  -x[2]+np.pi})
+    #cons.append({'type': 'ineq', 'fun': lambda x:  x[2]+np.pi})
     cons.append({'type': 'ineq', 'fun': lambda x:  x[4]})
 
     for a in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
@@ -386,21 +386,19 @@ weights2 = np.array([0.27344326491,
 # table_direction = ['up','right']
 # environment = True
 
-# P = [0.3,-0.18]
+# P = [0.5,-0.18]
 # Xf = [0.0,0.3]
 # x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
 # y_limits = [-0.2, 0.2, 0.4]
 # table_direction = ['up','left']
 # environment = True
-# LESSAAAAA
 
-# P = [0.2,0.38]
+# P = [0.05,0.38]
 # Xf = [0.7,0.0]
 # x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
 # y_limits = [-0.2, 0.2, 0.4]
 # table_direction = ['down','right']
 # environment = True
-# LESSAAAAA
 
 P = [0.4,0.38]
 Xf = [0.0,0.0]
@@ -421,8 +419,8 @@ environment = True
 # table_direction = ['up','right']
 # environment = True
 
-colormap = False
-intersection_threshold = 0.00002
+colormap = True
+intersection_threshold = 0.0002
 
 X_opt = find_sol(environment, x_limits, y_limits, table_direction, intersection_threshold)
 
