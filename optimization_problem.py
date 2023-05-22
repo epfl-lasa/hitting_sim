@@ -92,45 +92,45 @@ def fun1(x,Xf):
     return f
 
 # CONSTRAINTS
+margin = 0.05
 
 # Table constraints:
 def table_consx_1(x,x_limits,y_limits,direction):
     if direction[1] == 'right':
-        return x[0]-x_limits[0] 
+        return x[0]-(x_limits[0]+margin) 
     else:
         if direction[0] == 'up':
-            return x[0]-x_limits[0] if (x[1]>y_limits[1]) else x[0]-x_limits[1]
+            return x[0]-(x_limits[0]+margin) if (x[1]>y_limits[1]) else x[0]-(x_limits[1]+margin) 
         else:
-            return x[0]-x_limits[0] if (x[1]<y_limits[1]) else x[0]-x_limits[1]
+            return x[0]-(x_limits[0]+margin) if (x[1]<y_limits[1]) else x[0]-(x_limits[1]+margin) 
 
 def table_consx_2(x,x_limits,y_limits,direction):
     if direction[1] == 'right':
         if direction[0] == 'up':
-            return -x[0]+x_limits[2] if (x[1]>y_limits[1]) else -x[0]+x_limits[1]
+            return -x[0]+(x_limits[2]-margin)  if (x[1]>y_limits[1]) else -x[0]+(x_limits[1]-margin) 
         else:
-            return -x[0]+x_limits[2] if (x[1]<y_limits[1]) else -x[0]+x_limits[1]
+            return -x[0]+(x_limits[2]-margin)  if (x[1]<y_limits[1]) else -x[0]+(x_limits[1]-margin) 
     else:
-        -x[0]+x_limits[2]
+        -x[0]+(x_limits[2]-margin) 
 
 def table_consy_1(x,x_limits,y_limits,direction):
     if direction[0] == 'up':
-        return -x[1]+y_limits[2] 
+        return -x[1]+(y_limits[2]-margin)  
     else:
         if direction[1] == 'right':
-            return -x[1]+y_limits[2] if(x[0]<x_limits[1]) else -x[1]+y_limits[1]
+            return -x[1]+(y_limits[2]-margin)  if(x[0]<x_limits[1]) else -x[1]+(y_limits[1]-margin) 
         else:
-            return -x[1]+y_limits[2] if(x[0]>x_limits[1]) else -x[1]+y_limits[1]
+            return -x[1]+(y_limits[2]-margin)  if(x[0]>x_limits[1]) else -x[1]+(y_limits[1]-margin) 
 
 def table_consy_2(x,x_limits,y_limits,direction):
     if direction[0] == 'up':
         if direction[1] == 'right':
-            return x[1]-y_limits[0] if(x[0]<x_limits[1]) else x[1]-y_limits[1]
+            return x[1]-(y_limits[0]+margin)  if(x[0]<x_limits[1]) else x[1]-(y_limits[1]+margin) 
         else:
-            return x[1]-y_limits[0] if(x[0]>x_limits[1]) else x[1]-y_limits[1]
+            return x[1]-(y_limits[0]+margin)  if(x[0]>x_limits[1]) else x[1]-(y_limits[1]+margin) 
     else:
-        return x[1]-y_limits[0]
+        return x[1]-(y_limits[0]+margin) 
 
-margin = 0.0
 
 # Box always on Table
 def cons_1(x, alpha, Xf, x_limits, direction):
@@ -138,44 +138,44 @@ def cons_1(x, alpha, Xf, x_limits, direction):
         return ((1 - alpha) * x[0] + alpha * Xf[0]) - (x_limits[0] + margin) 
     else:
         if direction[0] == 'up':
-            return ((1 - alpha) * x[0] + alpha * Xf[0])-x_limits[0] if (((1 - alpha) * x[1] + alpha * Xf[1])>y_limits[1]) \
-                else ((1 - alpha) * x[0] + alpha * Xf[0])-x_limits[1]
+            return ((1 - alpha) * x[0] + alpha * Xf[0])-(x_limits[0]+margin) if (((1 - alpha) * x[1] + alpha * Xf[1])>y_limits[1]) \
+                else ((1 - alpha) * x[0] + alpha * Xf[0])-(x_limits[1]+margin) 
         else:
-            return ((1 - alpha) * x[0] + alpha * Xf[0])-x_limits[0] if (((1 - alpha) * x[1] + alpha * Xf[1])<y_limits[1]) \
-                else ((1 - alpha) * x[0] + alpha * Xf[0])-x_limits[1]
+            return ((1 - alpha) * x[0] + alpha * Xf[0])-(x_limits[0]+margin) if (((1 - alpha) * x[1] + alpha * Xf[1])<y_limits[1]) \
+                else ((1 - alpha) * x[0] + alpha * Xf[0])-(x_limits[1]+margin) 
 
 def cons_2(x, alpha, Xf, x_limits, y_limits, direction):
     if direction[1] == 'right':
         if direction[0] == 'up':
-            return -((1 - alpha) * x[0] + alpha * Xf[0])+x_limits[2] if (((1 - alpha) * x[1] + alpha * Xf[1])>y_limits[1]) \
-                else -((1 - alpha) * x[0] + alpha * Xf[0])+x_limits[1]
+            return -((1 - alpha) * x[0] + alpha * Xf[0])+(x_limits[2]-margin)  if (((1 - alpha) * x[1] + alpha * Xf[1])>y_limits[1]) \
+                else -((1 - alpha) * x[0] + alpha * Xf[0])+(x_limits[1]-margin) 
         else:
-            return -((1 - alpha) * x[0] + alpha * Xf[0])+x_limits[2] if (((1 - alpha) * x[1] + alpha * Xf[1])<y_limits[1]) \
-                else -((1 - alpha) * x[0] + alpha * Xf[0])+x_limits[1]
+            return -((1 - alpha) * x[0] + alpha * Xf[0])+(x_limits[2]-margin)  if (((1 - alpha) * x[1] + alpha * Xf[1])<y_limits[1]) \
+                else -((1 - alpha) * x[0] + alpha * Xf[0])+(x_limits[1]-margin) 
     else:
-        -((1 - alpha) * x[0] + alpha * Xf[0])+x_limits[2]
+        -((1 - alpha) * x[0] + alpha * Xf[0])+(x_limits[2]-margin) 
 
 def cons_3(x, alpha, Xf, y_limits, direction):
     if direction[0] == 'up':
-        return -((1 - alpha) * x[1] + alpha * Xf[1])+y_limits[2] 
+        return -((1 - alpha) * x[1] + alpha * Xf[1])+(y_limits[2]-margin)  
     else:
         if direction[1] == 'right':
-            return -((1 - alpha) * x[1] + alpha * Xf[1])+y_limits[2] if(((1 - alpha) * x[0] + alpha * Xf[0])<x_limits[1]) \
-                else -((1 - alpha) * x[1] + alpha * Xf[1])+y_limits[1]
+            return -((1 - alpha) * x[1] + alpha * Xf[1])+(y_limits[2]-margin)  if(((1 - alpha) * x[0] + alpha * Xf[0])<x_limits[1]) \
+                else -((1 - alpha) * x[1] + alpha * Xf[1])+(y_limits[1]-margin) 
         else:
-            return -((1 - alpha) * x[1] + alpha * Xf[1])+y_limits[2] if(((1 - alpha) * x[0] + alpha * Xf[0])>x_limits[1]) \
-                else -((1 - alpha) * x[1] + alpha * Xf[1])+y_limits[1]
+            return -((1 - alpha) * x[1] + alpha * Xf[1])+(y_limits[2]-margin)  if(((1 - alpha) * x[0] + alpha * Xf[0])>x_limits[1]) \
+                else -((1 - alpha) * x[1] + alpha * Xf[1])+(y_limits[1]-margin) 
         
 def cons_4(x, alpha, Xf, x_limits, y_limits, direction):   
     if direction[0] == 'up':
         if direction[1] == 'right':
-            return ((1 - alpha) * x[1] + alpha * Xf[1])-y_limits[0] if(((1 - alpha) * x[0] + alpha * Xf[0])<x_limits[1]) \
-                else ((1 - alpha) * x[1] + alpha * Xf[1])-y_limits[1]
+            return ((1 - alpha) * x[1] + alpha * Xf[1])-(y_limits[0]+margin)  if(((1 - alpha) * x[0] + alpha * Xf[0])<x_limits[1]) \
+                else ((1 - alpha) * x[1] + alpha * Xf[1])-(y_limits[1]+margin) 
         else:
-            return ((1 - alpha) * x[1] + alpha * Xf[1])-y_limits[0] if(((1 - alpha) * x[0] + alpha * Xf[0])>x_limits[1]) \
-                else ((1 - alpha) * x[1] + alpha * Xf[1])-y_limits[1]
+            return ((1 - alpha) * x[1] + alpha * Xf[1])-(y_limits[0]+margin)  if(((1 - alpha) * x[0] + alpha * Xf[0])>x_limits[1]) \
+                else ((1 - alpha) * x[1] + alpha * Xf[1])-(y_limits[1]+margin) 
     else:
-        return ((1 - alpha) * x[1] + alpha * Xf[1])-y_limits[0]
+        return ((1 - alpha) * x[1] + alpha * Xf[1])-(y_limits[0]+margin) 
 
 def constraints(Xf, x_limits, y_limits, direction):
     cons = []
@@ -191,7 +191,7 @@ def constraints(Xf, x_limits, y_limits, direction):
     #cons.append({'type': 'ineq', 'fun': lambda x:  x[2]+np.pi})
     cons.append({'type': 'ineq', 'fun': lambda x:  x[4]})
 
-    for a in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+    for a in np.linspace(0.1,0.9,num=30):
         cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_1(x, a, Xf, x_limits, direction)})
         cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_2(x, a, Xf, x_limits, y_limits, direction)})
         cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_3(x, a, Xf, y_limits, direction)})
@@ -386,10 +386,10 @@ weights2 = np.array([0.27344326491,
 # table_direction = ['up','right']
 # environment = True
 
-# P = [0.5,-0.18]
-# Xf = [0.0,0.3]
+# P = [0.8,-0.18]
+# Xf = [-0.0,0.3]
 # x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-# y_limits = [-0.2, 0.2, 0.4]
+# y_limits = [-0.2, 0.2, 0.6]
 # table_direction = ['up','left']
 # environment = True
 
@@ -400,27 +400,36 @@ weights2 = np.array([0.27344326491,
 # table_direction = ['down','right']
 # environment = True
 
-P = [0.4,0.38]
+P = [0.5,0.38]
 Xf = [0.0,0.0]
 x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-y_limits = [-0.2, 0.2, 0.4]
+y_limits = [-0.2, 0.15, 0.4]
 table_direction = ['down','left']
 environment = True
 
+# P = [0.0,0.0]
 # Xf = [1.0,0.7]
 # x_limits = [-0.25, 0.4, 1.2]  #[-0.25, 0.5]
 # y_limits = [-0.2, 0.4, 0.9]
 # table_direction = ['up','right']
 # environment = True
 
+# P = [0.0,0.0]
 # Xf = [1.55,0.2]
 # x_limits = [-0.25, 1.9, 1.9]
 # y_limits = [-0.2, 0.4, 0.4]
 # table_direction = ['up','right']
 # environment = True
 
-colormap = True
-intersection_threshold = 0.0002
+# P = [0.0,0.0]
+# Xf = [0.7,0.3]
+# x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
+# y_limits = [-0.2, 0.2, 0.4]
+# table_direction = ['up','right']
+# environment = True
+
+colormap = False
+intersection_threshold = 0.008
 
 X_opt = find_sol(environment, x_limits, y_limits, table_direction, intersection_threshold)
 
@@ -430,7 +439,7 @@ print("theta_2 = ", np.rad2deg(X_opt[2]))
 
 print("intersection = ", integral_intersection_area(X_opt))
 print("objective function = ", fun(X_opt))
-print("slack = ",X_opt[4])
+#print("slack = ",X_opt[4])
 
 plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap)
 

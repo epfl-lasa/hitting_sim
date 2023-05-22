@@ -9,6 +9,18 @@ from sklearn.model_selection import GridSearchCV
 from scipy.stats import multivariate_normal
 from scipy.stats import chi2
 
+from gmr import GMM
+
+import os
+import time
+
+from ds import linear_hitting_ds_pre_impact, linear_ds
+from controller import get_joint_velocities_qp_dir_inertia_specific_NS, get_joint_velocities_qp
+from get_robot import sim_robot_env
+from iiwa_environment import object
+from iiwa_environment import physics as phys
+import functions as f
+
 
 def is_within_sigma(point, mean, covariance,nb_sigma=2):
     # Compute the Mahalanobis distance between the point and the mean vector
@@ -54,7 +66,7 @@ hf = h5py.File('Data/data_good.h5', 'r')
 
 # Syntax
 parameters = hf['my_data']['params'][:]         #Hitting parameters        (input)
-positions = hf['my_data']['box_pos'][:]        #Fibnal position of box    (output)
+positions = hf['my_data']['box_pos'][:]        #Final position of box    (output)
 
 data = np.concatenate((parameters,positions),axis=1)
 
@@ -70,8 +82,112 @@ ax.scatter(x, y, s=20,  label ='Final position of box')
 ax.scatter(0.5,0.3, s=100, marker='+',color='g', label ='Initial position of box')
 
 
-
 t = grid_search.fit(data)               
+
+
+# gmm = GMM(n_components=3, random_state=0)
+# gmm.from_samples(data)
+
+# REGRESSION
+gmm = GMM(
+   n_components=grid_search.best_estimator_.n_components, priors=grid_search.best_estimator_.weights_, 
+   means=grid_search.best_estimator_.means_, covariances=np.array([c for c in grid_search.best_estimator_.covariances_]))
+
+
+# Uncomment this code to predict the final position of the box given the hitting parameters
+# theta_reg = 0
+# p_des_reg = 0.9
+# x_impact_reg = 0.5
+# y_impact_reg = 0.0
+# x1 = [[np.cos(theta_reg), np.sin(theta_reg), 0.0,p_des_reg, x_impact_reg, y_impact_reg]]  #Parameters
+# x1_index = [0,1,2,3,4,5]                                                                  #Parameters
+
+# Uncomment this code to predict the hitting parameters given the final position of the box
+x_reg = 0.5 #0.49751953
+y_reg = 1.0 #0.49648312
+z_reg = 0.44922494
+x1 = [[x_reg, y_reg, z_reg]]                      #Positions
+x1_index = [6,7,8]                                #Positions
+
+x2_predicted_mean = gmm.predict(x1_index, x1)
+print(x2_predicted_mean)
+
+
+#theta_act = np.arccos(x2_predicted_mean[0])
+h_dir_act = x2_predicted_mean[0][:3]
+p_des_act = x2_predicted_mean[0][3]
+x_impact_act = x2_predicted_mean[0][4]
+y_impact_act = x2_predicted_mean[0][5]
+X_ref_act = [x_impact_act,0,0.5]
+
+
+trailDuration = 0 # Make it 0 if you don't want the trail to end
+contactTime = 0.5 # This is the time that the robot will be in contact with the box
+
+################## GET THE ROBOT + ENVIRONMENT #########################
+box = object.Box([0.2, 0.2, 0.2], 0.5)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
+iiwa = sim_robot_env(1, box)
+
+###################### INIT CONDITIONS #################################
+X_init = [0.3, -0.2, 0.5]
+q_init = iiwa.get_IK_joint_position(X_init) # Currently I am not changing any weights here
+Lambda_init = iiwa.get_inertia_matrix_specific(q_init)
+
+box_position_orientation = iiwa.get_box_position_orientation()
+box_position_init = box_position_orientation[0]
+box_orientation_init = box_position_orientation[1]
+
+A = np.array([[-2, 0, 0], [0, -2, 0], [0, 0, -2]])
+
+
+
+
+# initialize the robot and the box
+iiwa.set_to_joint_position(q_init)
+iiwa.reset_box(box_position_init, box_orientation_init)
+lambda_dir = h_dir_act.T @ Lambda_init @ h_dir_act
+is_hit = False
+
+# take some time
+time.sleep(1)    # !!!!
+
+# initialise the time
+time_init = time.time()
+
+# Start the motion
+while 1:
+    X_qp = np.array(iiwa.get_ee_position())
+    
+    if not is_hit:
+        dX = linear_hitting_ds_pre_impact(A, X_qp, X_ref_act, h_dir_act, p_des_act, lambda_dir, box.mass)
+    else:
+        dX = linear_ds(A, X_qp, X_ref_act)
+
+    hit_dir = dX / np.linalg.norm(dX)
+
+    lambda_current = iiwa.get_inertia_matrix()
+    lambda_dir = hit_dir.T @ lambda_current @ hit_dir
+    
+    jac = np.array(iiwa.get_trans_jacobian())
+    q_dot = get_joint_velocities_qp_dir_inertia_specific_NS(dX, jac, iiwa, hit_dir, 0.15, lambda_dir)
+    
+    iiwa.move_with_joint_velocities(q_dot)
+
+    ## Need something more here later, this is contact detection and getting the contact point
+    if(iiwa.get_collision_points().size != 0):
+        is_hit = True
+        iiwa.get_collision_position()
+
+        
+    iiwa.step()
+    time_now = time.time()
+
+    if((is_hit and iiwa.get_box_speed() < 0.001 and time_now - time_init > contactTime) or (time_now - time_init > 10)):
+        box_pos = np.array(iiwa.get_box_position_orientation()[0])
+        break
+
+
+
 
 n_components = grid_search.best_estimator_.n_components
 
@@ -214,6 +330,9 @@ for i in range(n_components):
 
 
 print(max_theta)
+
+
+
 
 # x y axis name and title
 plt.xlabel('X-axis')
