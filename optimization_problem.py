@@ -46,14 +46,23 @@ def integral_intersection_area(x): #means1, covariances1, weights1, means2, cova
         new_covariances2.append(new_covariance2)
         dets_cov2.append(det_cov2)
 
-    def GMM_product(xx, yy, n_components):
-        result1 = 0
-        result2 = 0
-        for i in range(n_components):
-            result1 += weights1[i] * (2 * np.pi * np.sqrt(dets_cov1[i])) * multivariate_normal.pdf([xx, yy], mean=new_means1[i], cov=new_covariances1[i])
-            result2 += weights2[i] * (2 * np.pi * np.sqrt(dets_cov2[i])) * multivariate_normal.pdf([xx, yy], mean=new_means2[i], cov=new_covariances2[i])
-        return result1*result2
-    return GMM_product(x[0],x[1],n_components)
+    # def GMM_product(xx, yy, n_components):
+    #     result1 = 0
+    #     result2 = 0
+    #     for i in range(n_components):
+    #         result1 += weights1[i] * (2 * np.pi * np.sqrt(dets_cov1[i])) * multivariate_normal.pdf([xx, yy], mean=new_means1[i], cov=new_covariances1[i])
+    #         result2 += weights2[i] * (2 * np.pi * np.sqrt(dets_cov2[i])) * multivariate_normal.pdf([xx, yy], mean=new_means2[i], cov=new_covariances2[i])
+    #     print(result1,"  ",result2)
+    #     return result1*result2 #*0.04539943419558094
+    # return GMM_product(x[0],x[1],n_components)
+    result1 = 0
+    result2 = 0
+    for i in range(n_components):
+        result1 += weights1[i] * (2 * np.pi * np.sqrt(dets_cov1[i])) * multivariate_normal.pdf([x[0], x[1]], mean=new_means1[i], cov=new_covariances1[i])
+        result2 += weights2[i] * (2 * np.pi * np.sqrt(dets_cov2[i])) * multivariate_normal.pdf([x[0], x[1]], mean=new_means2[i], cov=new_covariances2[i])
+    print(result1,"  ",result2)
+    return result1*0.04539943419558094#*result2
+
 
 # not integrate but evaluate the product at position of box at GMM2 (or just take max of product)
 
@@ -72,7 +81,7 @@ def fun(x):
         pdf = weights2[i]*(2 * np.pi * np.sqrt(det_cov))* multivariate_normal.pdf(Xf, mean=new_mean, cov=new_covariance)
 
         f = f + pdf
-    return -f #+ 100*x[4]   #x[4] slack
+    return -f*integral_intersection_area(x) #+ 100*x[4]   #x[4] slack
 
 def fun1(x,Xf):
     f = 0
@@ -89,7 +98,7 @@ def fun1(x,Xf):
         pdf = weights2[i]*(2 * np.pi * np.sqrt(det_cov))* multivariate_normal.pdf(Xf, mean=new_mean, cov=new_covariance)
 
         f = f + pdf
-    return f
+    return f #*integral_intersection_area(x)
 
 # CONSTRAINTS
 margin = 0.05
@@ -235,7 +244,7 @@ def guess(P,Xf, table_direction):
         guess[3] = np.arctan2(guess[0]-P[0],P[1]-guess[1]) +np.pi
     return guess
 
-def plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap):
+def plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap,colormap1):
     fig, ax = plt.subplots()
 
     if colormap:
@@ -247,6 +256,20 @@ def plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap):
             for j, x1_val in enumerate(x1_range):
                 X1 = [x0_val, x1_val]
                 pdf_values[j, i] = -fun1(X_opt, X1)
+
+        plt.imshow(pdf_values, extent=[x_limits[0], x_limits[2], y_limits[0], y_limits[2]], origin='lower', cmap='viridis')
+
+    if colormap1:
+        x0_range = np.linspace(x_limits[0], x_limits[2], 100)
+        x1_range = np.linspace(y_limits[0], y_limits[2], 100)
+
+        pdf_values = np.zeros((len(x0_range), len(x1_range)))
+        for i, x0_val in enumerate(x0_range):
+            for j, x1_val in enumerate(x1_range):
+                X1 = [x0_val, x1_val]
+                X_try = list(X_opt)
+                X_try[:2] = X1
+                pdf_values[j, i] = -fun1(X_try, Xf)
 
         plt.imshow(pdf_values, extent=[x_limits[0], x_limits[2], y_limits[0], y_limits[2]], origin='lower', cmap='viridis')
 
@@ -379,12 +402,12 @@ weights2 = np.array([0.27344326491,
 
 
 
-# P = [0.0,0.0]
-# Xf = [0.7,0.3]
-# x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-# y_limits = [-0.2, 0.2, 0.4]
-# table_direction = ['up','right']
-# environment = True
+P = [0.15,0.0]
+Xf = [0.7,0.3]
+x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
+y_limits = [-0.2, 0.2, 0.4]
+table_direction = ['up','right']
+environment = True
 
 # P = [0.8,-0.18]
 # Xf = [-0.0,0.3]
@@ -400,12 +423,12 @@ weights2 = np.array([0.27344326491,
 # table_direction = ['down','right']
 # environment = True
 
-P = [0.5,0.38]
-Xf = [0.0,0.0]
-x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-y_limits = [-0.2, 0.15, 0.4]
-table_direction = ['down','left']
-environment = True
+# P = [0.5,0.38]
+# Xf = [0.0,0.0]
+# x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
+# y_limits = [-0.2, 0.15, 0.4]
+# table_direction = ['down','left']
+# environment = True
 
 # P = [0.0,0.0]
 # Xf = [1.0,0.7]
@@ -429,6 +452,7 @@ environment = True
 # environment = True
 
 colormap = False
+colormap1 = False
 intersection_threshold = 0.008
 
 X_opt = find_sol(environment, x_limits, y_limits, table_direction, intersection_threshold)
@@ -441,5 +465,5 @@ print("intersection = ", integral_intersection_area(X_opt))
 print("objective function = ", fun(X_opt))
 #print("slack = ",X_opt[4])
 
-plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap)
+plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap,colormap1)
 
