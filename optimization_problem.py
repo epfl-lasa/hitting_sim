@@ -61,7 +61,7 @@ def integral_intersection_area(x): #means1, covariances1, weights1, means2, cova
         result1 += weights1[i] * (2 * np.pi * np.sqrt(dets_cov1[i])) * multivariate_normal.pdf([x[0], x[1]], mean=new_means1[i], cov=new_covariances1[i])
         result2 += weights2[i] * (2 * np.pi * np.sqrt(dets_cov2[i])) * multivariate_normal.pdf([x[0], x[1]], mean=new_means2[i], cov=new_covariances2[i])
     print(result1,"  ",result2)
-    return result1*0.04539943419558094#*result2
+    return result1#*0.04539943419558094#*result2
 
 
 # not integrate but evaluate the product at position of box at GMM2 (or just take max of product)
@@ -81,7 +81,8 @@ def fun(x):
         pdf = weights2[i]*(2 * np.pi * np.sqrt(det_cov))* multivariate_normal.pdf(Xf, mean=new_mean, cov=new_covariance)
 
         f = f + pdf
-    return -f*integral_intersection_area(x) #+ 100*x[4]   #x[4] slack
+    return -f*integral_intersection_area(x) - 0.001*(integral_intersection_area(x) - intersection_threshold)
+    # return -f- 0.2*(integral_intersection_area(x))
 
 def fun1(x,Xf):
     f = 0
@@ -189,18 +190,18 @@ def cons_4(x, alpha, Xf, x_limits, y_limits, direction):
 def constraints(Xf, x_limits, y_limits, direction):
     cons = []
 
-    cons.append({'type': 'ineq', 'fun': lambda x:  integral_intersection_area(x) - intersection_threshold}) #+ 0.001*x[4]},
+    # cons.append({'type': 'ineq', 'fun': lambda x:  integral_intersection_area(x) - intersection_threshold}) #+ 0.001*x[4]},
         
-    cons.append({'type': 'ineq', 'fun': lambda x: table_consx_1(x,x_limits,y_limits,direction)})
-    cons.append({'type': 'ineq', 'fun': lambda x: table_consx_2(x,x_limits,y_limits,direction)})
-    cons.append({'type': 'ineq', 'fun': lambda x: table_consy_1(x,x_limits,y_limits,direction)})
-    cons.append({'type': 'ineq', 'fun': lambda x: table_consy_2(x,x_limits,y_limits,direction)})
+    # cons.append({'type': 'ineq', 'fun': lambda x: table_consx_1(x,x_limits,y_limits,direction)})
+    # cons.append({'type': 'ineq', 'fun': lambda x: table_consx_2(x,x_limits,y_limits,direction)})
+    # cons.append({'type': 'ineq', 'fun': lambda x: table_consy_1(x,x_limits,y_limits,direction)})
+    # cons.append({'type': 'ineq', 'fun': lambda x: table_consy_2(x,x_limits,y_limits,direction)})
 
     #cons.append({'type': 'ineq', 'fun': lambda x:  -x[2]+np.pi})
     #cons.append({'type': 'ineq', 'fun': lambda x:  x[2]+np.pi})
-    cons.append({'type': 'ineq', 'fun': lambda x:  x[4]})
+    # cons.append({'type': 'ineq', 'fun': lambda x:  x[4]})
 
-    for a in np.linspace(0.1,0.9,num=30):
+    for a in np.linspace(0.0,1.0,num=30):
         cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_1(x, a, Xf, x_limits, direction)})
         cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_2(x, a, Xf, x_limits, y_limits, direction)})
         cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_3(x, a, Xf, y_limits, direction)})
@@ -216,11 +217,13 @@ def constraints(Xf, x_limits, y_limits, direction):
         #{'type': 'ineq', 'fun': lambda x: np.dot(Xf-x[:2],x[:2]-P)})
 
         #{'type': 'eq', 'fun': lambda x: x[2]-0.3})
+    # cons.append({'type': 'ineq', 'fun': lambda x:  integral_intersection_area(x) - intersection_threshold}) #+ 0.001*x[4]},
+    
     return cons
 
 
 def guess(P,Xf, table_direction):
-    guess = [0,0,0,0,0]
+    guess = [0,0,0,0]
 
     if table_direction[0] == 'up' and table_direction[1] == 'right':
         guess[0] = (P[0]+Xf[0])/2
@@ -365,8 +368,13 @@ def find_sol(environment,x_limits,y_limits,direction, intersection_threshold):#P
 
     guess_ = guess(P,Xf,direction)
     #bnds = [(None,None),(None,None),(None,None),(None,None),(0.0,None)]
-    result = minimize(fun, guess_, method='COBYLA', constraints=cons) #, bounds = bnds)#, options={'tol': 1e-200}) # bounds= bnds) 
+    result = minimize(fun, guess_, method='COBYLA', constraints=cons, tol=1e-3, options={'disp': True}) #, bounds = bnds)#, options={'tol': 1e-200}) # bounds= bnds) 
     # Adapt tol to avoid local minima
+    # print(result.message)
+    # print(result.maxcv)
+    # print(result.success)
+    # print(result.fun)
+    # print(result.nfev)
     return result.x
 
 
@@ -402,7 +410,7 @@ weights2 = np.array([0.27344326491,
 
 
 
-P = [0.15,0.0]
+P = [-0.2,0.0]
 Xf = [0.7,0.3]
 x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
 y_limits = [-0.2, 0.2, 0.4]
@@ -451,9 +459,9 @@ environment = True
 # table_direction = ['up','right']
 # environment = True
 
-colormap = False
-colormap1 = False
-intersection_threshold = 0.008
+colormap = True
+colormap1 = True
+intersection_threshold = 0.6
 
 X_opt = find_sol(environment, x_limits, y_limits, table_direction, intersection_threshold)
 
