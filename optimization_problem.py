@@ -84,9 +84,9 @@ def fun(x):
     # return -f*integral_intersection_area(x) - 0.001*(integral_intersection_area(x) - intersection_threshold)
     # print(f)
     print(integral_intersection_area(x), -f*integral_intersection_area(x))
-    # return -f*integral_intersection_area(x) - 0.00*(integral_intersection_area(x) - intersection_threshold)
+    return -f*integral_intersection_area(x) - 0.00*(integral_intersection_area(x) - intersection_threshold)
 
-    return -f#- 0.2*(integral_intersection_area(x)-0.5)
+    # return -f#- 0.2*(integral_intersection_area(x)-0.5)
 
 def fun1(x,Xf):
     f = 0
@@ -437,19 +437,19 @@ covariances2 = np.array([[[0.00026569, 0.00025749],
 weights2 = np.array([0.5083096399095122, 0.49169036009048783])
 
 
-P = [0.0,0.0]
-Xf = [0.7,0.3]
-x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-y_limits = [-0.2, 0.2, 0.4]
-table_direction = ['up','right']
-environment = True
-
-# P = [0.8,-0.18]
-# Xf = [-0.0,0.3]
+# P = [0.0,0.0]
+# Xf = [0.7,0.3]
 # x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-# y_limits = [-0.2, 0.2, 0.6]
-# table_direction = ['up','left']
+# y_limits = [-0.2, 0.2, 0.4]
+# table_direction = ['up','right']
 # environment = True
+
+P = [0.8,-0.18]
+Xf = [-0.0,0.3]
+x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
+y_limits = [-0.2, 0.2, 0.6]
+table_direction = ['up','left']
+environment = True
 
 # P = [0.05,0.38]
 # Xf = [0.7,0.0]

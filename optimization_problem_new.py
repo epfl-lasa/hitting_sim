@@ -411,19 +411,19 @@ weights2 = np.array([0.27344326491,
 
 
 
-P = [-0.2,0.0]
-Xf = [0.7,0.3]
-x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-y_limits = [-0.2, 0.2, 0.4]
-table_direction = ['up','right']
-environment = True
-
-# P = [0.8,-0.18]
-# Xf = [-0.0,0.3]
+# P = [-0.2,0.0]
+# Xf = [0.7,0.3]
 # x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-# y_limits = [-0.2, 0.2, 0.6]
-# table_direction = ['up','left']
+# y_limits = [-0.2, 0.2, 0.4]
+# table_direction = ['up','right']
 # environment = True
+
+P = [0.8,-0.18]
+Xf = [-0.0,0.3]
+x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
+y_limits = [-0.2, 0.2, 0.6]
+table_direction = ['up','left']
+environment = True
 
 # P = [0.05,0.38]
 # Xf = [0.7,0.0]
