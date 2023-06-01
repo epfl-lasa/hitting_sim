@@ -17,7 +17,7 @@ class sim_robot_env:
         startOrientation = p.getQuaternionFromEuler([0, 0, 0])
         startOrientation2 = p.getQuaternionFromEuler([0, 0, 0])
         p.setGravity(0, 0, -9.81)
-        p.setTimeStep(0.01)
+        p.setTimeStep(0.001)
         p.setRealTimeSimulation(use_sim)
         p.resetDebugVisualizerCamera(cameraDistance=1.60, cameraYaw=200, cameraPitch=-25.00,
                                             cameraTargetPosition=[0, 0, 0])
@@ -29,10 +29,10 @@ class sim_robot_env:
         the environment with the box and table for the different scenarios I would like in the simulation
         '''
         self.box = p.loadURDF("descriptions/robot_descriptions/objects_description/objects/simple_box.urdf",
-                              [0.6, 0.0, 0.5], globalScaling=1.0, useFixedBase=0)
+                              [0.5, 0.3, 0.5], globalScaling=1.0, useFixedBase=0)
         tableOrientation = p.getQuaternionFromEuler([0, 0, math.pi / 2])
         self.table = p.loadURDF("descriptions/robot_descriptions/objects_description/objects/table.urdf",
-                           [2.0, 0.0, 0.0], tableOrientation, globalScaling=1.0, useFixedBase=1)
+                           [1.15, 1.0, 0.0], tableOrientation, globalScaling=1.0, useFixedBase=1)
         p.changeDynamics(self.box, -1, mass=box_object.mass, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
                          spinningFriction=0.02, restitution=0, lateralFriction=0.3)
         p.changeDynamics(self.table, 1, mass=10, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,

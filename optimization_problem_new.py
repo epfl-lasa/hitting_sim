@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.optimize import minimize, basinhopping, Bounds
+from scipy.optimize import minimize, basinhopping, Bounds, LinearConstraint, NonlinearConstraint
 from scipy.stats import multivariate_normal
 from scipy.integrate import nquad
 
@@ -7,11 +7,14 @@ from sklearn.mixture import GaussianMixture
 import matplotlib.pyplot as plt
 import ellipse
 
-# x[0] = x
-# x[1] = y
-# x[2] = theta_2
-# x[3] = theta_1
-
+'''
+The optimisation variable
+x[0] = x - the middle position of the box
+x[1] = y - the middle position of the box
+x[2] = theta_2
+x[3] = theta_1
+x[4] = slack variable if needed
+'''
 
 
 def integral_intersection_area(x): #means1, covariances1, weights1, means2, covariances2, weights2):
@@ -46,15 +49,7 @@ def integral_intersection_area(x): #means1, covariances1, weights1, means2, cova
         new_covariances2.append(new_covariance2)
         dets_cov2.append(det_cov2)
 
-    # def GMM_product(xx, yy, n_components):
-    #     result1 = 0
-    #     result2 = 0
-    #     for i in range(n_components):
-    #         result1 += weights1[i] * (2 * np.pi * np.sqrt(dets_cov1[i])) * multivariate_normal.pdf([xx, yy], mean=new_means1[i], cov=new_covariances1[i])
-    #         result2 += weights2[i] * (2 * np.pi * np.sqrt(dets_cov2[i])) * multivariate_normal.pdf([xx, yy], mean=new_means2[i], cov=new_covariances2[i])
-    #     print(result1,"  ",result2)
-    #     return result1*result2 #*0.04539943419558094
-    # return GMM_product(x[0],x[1],n_components)
+    
     result1 = 0
     result2 = 0
     for i in range(n_components):
@@ -81,12 +76,8 @@ def fun(x):
         pdf = weights2[i]*(2 * np.pi * np.sqrt(det_cov))* multivariate_normal.pdf(Xf, mean=new_mean, cov=new_covariance)
 
         f = f + pdf
-    # return -f*integral_intersection_area(x) - 0.001*(integral_intersection_area(x) - intersection_threshold)
-    # print(f)
-    print(integral_intersection_area(x), -f*integral_intersection_area(x))
-    return -f*integral_intersection_area(x) - 0.00*(integral_intersection_area(x) - intersection_threshold)
-
-    # return -f- 0.2*(integral_intersection_area(x))
+    return -f*integral_intersection_area(x)# - 0.001*(integral_intersection_area(x) - intersection_threshold)
+    # return -f #- 0.2*(integral_intersection_area(x))
 
 def fun1(x,Xf):
     f = 0
@@ -107,6 +98,9 @@ def fun1(x,Xf):
 
 # CONSTRAINTS
 margin = 0.05
+
+def intersection_constraint(x):
+    return integral_intersection_area(x) - intersection_threshold
 
 # Table constraints:
 def table_consx_1(x,x_limits,y_limits,direction):
@@ -193,9 +187,10 @@ def cons_4(x, alpha, Xf, x_limits, y_limits, direction):
 
 def constraints(Xf, x_limits, y_limits, direction):
     cons = []
-
+    con1 = NonlinearConstraint(intersection_constraint, 0.5, np.inf)
     # cons.append({'type': 'ineq', 'fun': lambda x:  integral_intersection_area(x) - intersection_threshold}) #+ 0.001*x[4]},
-        
+    
+    cons.append(con1)
     # cons.append({'type': 'ineq', 'fun': lambda x: table_consx_1(x,x_limits,y_limits,direction)})
     # cons.append({'type': 'ineq', 'fun': lambda x: table_consx_2(x,x_limits,y_limits,direction)})
     # cons.append({'type': 'ineq', 'fun': lambda x: table_consy_1(x,x_limits,y_limits,direction)})
@@ -205,16 +200,18 @@ def constraints(Xf, x_limits, y_limits, direction):
     #cons.append({'type': 'ineq', 'fun': lambda x:  x[2]+np.pi})
     # cons.append({'type': 'ineq', 'fun': lambda x:  x[4]})
 
-    for a in np.linspace(0.0,1.0,num=30):
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_1(x, a, Xf, x_limits, direction)})
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_2(x, a, Xf, x_limits, y_limits, direction)})
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_3(x, a, Xf, y_limits, direction)})
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_4(x, a, Xf, x_limits, y_limits, direction)})
+    # for a in np.linspace(0.0,1.0,num=30):
+    #     cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_1(x, a, Xf, x_limits, direction)})
+    #     cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_2(x, a, Xf, x_limits, y_limits, direction)})
+    #     cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_3(x, a, Xf, y_limits, direction)})
+    #     cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_4(x, a, Xf, x_limits, y_limits, direction)})
 
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_1(x, a, P, x_limits, direction)})
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_2(x, a, P, x_limits, y_limits, direction)})
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_3(x, a, P, y_limits, direction)})
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_4(x, a, P, x_limits, y_limits, direction)})
+    #     cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_1(x, a, P, x_limits, direction)})
+    #     cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_2(x, a, P, x_limits, y_limits, direction)})
+    #     cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_3(x, a, P, y_limits, direction)})
+    #     cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_4(x, a, P, x_limits, y_limits, direction)})
+
+
     
         #{'type': 'ineq', 'fun': lambda x: x[2] - (np.arctan2(Xf[1]-x[1],Xf[0]-x[0])-1.0)},
         #{'type': 'ineq', 'fun': lambda x: -x[2] + (np.arctan2(Xf[1]-x[1],Xf[0]-x[0])+1.0)},
@@ -372,7 +369,7 @@ def find_sol(environment,x_limits,y_limits,direction, intersection_threshold):#P
 
     guess_ = guess(P,Xf,direction)
     #bnds = [(None,None),(None,None),(None,None),(None,None),(0.0,None)]
-    result = minimize(fun, guess_, method='COBYLA', constraints=cons, tol=1e-8, options={'disp': True}) #, bounds = bnds)#, options={'tol': 1e-200}) # bounds= bnds) 
+    result = minimize(fun, guess_, method='trust-constr', constraints=cons, tol=1e-3, options={'disp': True, 'verbose': True}) #, bounds = bnds)#, options={'tol': 1e-200}) # bounds= bnds) 
     # Adapt tol to avoid local minima
     # print(result.message)
     # print(result.maxcv)

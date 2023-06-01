@@ -42,9 +42,9 @@ def des_hitting_point_grid(box_object, init_position, face, grid_size):
 
     N = grid_size*grid_size
 
-    x_l = np.linspace(-x_length/2, x_length/2, grid_size)
-    y_l = np.linspace(-y_length/2, y_length/2, grid_size)
-    z_l = np.linspace(-z_length/2, z_length/2, grid_size)
+    x_l = np.linspace(-x_length/2+0.1*x_length, x_length/2-0.1*x_length, grid_size)
+    y_l = np.linspace(-y_length/2+0.1*y_length, y_length/2-0.1*y_length, grid_size)
+    z_l = np.linspace(-z_length/2+0.1*z_length, z_length/2-0.1*z_length, grid_size)
 
     grid_02 = np.array(np.meshgrid(x_l, z_l))
     hit_grid_02 = np.resize(grid_02, (2, grid_size*grid_size))
