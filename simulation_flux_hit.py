@@ -57,7 +57,7 @@ for X_ref in X_ref_grid:
         X_qp = np.array(iiwa.get_ee_position())
         
         if not is_hit:
-            dX = linear_hitting_ds_pre_impact(A, X_qp, X_ref, h_dir, 0.7, lambda_dir, box.mass)
+            dX = linear_hitting_ds_pre_impact(A, X_qp, X_ref, h_dir, 0.5, lambda_dir, box.mass)
         else:
             dX = linear_ds(A, X_qp, X_ref)
 

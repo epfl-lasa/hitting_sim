@@ -84,9 +84,9 @@ def fun(x):
     # return -f*integral_intersection_area(x) - 0.001*(integral_intersection_area(x) - intersection_threshold)
     # print(f)
     print(integral_intersection_area(x), -f*integral_intersection_area(x))
-    return -f*integral_intersection_area(x) - 0.00*(integral_intersection_area(x) - intersection_threshold)
+    # return -f*integral_intersection_area(x) - 0.00*(integral_intersection_area(x) - intersection_threshold)
 
-    # return -f- 0.2*(integral_intersection_area(x))
+    return -f#- 0.2*(integral_intersection_area(x)-0.5)
 
 def fun1(x,Xf):
     f = 0
@@ -386,35 +386,58 @@ n_components = 2
 
 box1 = np.array([0.5,0.3])
 
-means1 = np.array([[0.47891806, 0.9040961], 
-                  [0.50023427, 0.51117959]])
+# means1 = np.array([[0.47891806, 0.9040961], 
+#                   [0.50023427, 0.51117959]])
 
 
-covariances1 = np.array([[[ 0.00438958, -0.00240083],
-                        [-0.00240083,  0.02641489]],
-                        [[ 0.0006874,  -0.0005142 ],
-                        [-0.0005142,   0.00842463]]])
+# covariances1 = np.array([[[ 0.00438958, -0.00240083],
+#                         [-0.00240083,  0.02641489]],
+#                         [[ 0.0006874,  -0.0005142 ],
+#                         [-0.0005142,   0.00842463]]])
 
-weights1 = np.array([0.27344326491,
-                    0.7265567351])
+# weights1 = np.array([0.27344326491,
+#                     0.7265567351])
+
+# box2 = np.array([0.5,0.3])
+
+# means2 = np.array([[0.47891806, 0.9040961], 
+#                   [0.50023427, 0.51117959]])
+
+
+# covariances2 = np.array([[[ 0.00438958, -0.00240083],
+#                         [-0.00240083,  0.02641489]],
+#                         [[ 0.0006874,  -0.0005142 ],
+#                         [-0.0005142,   0.00842463]]])
+
+# weights2 = np.array([0.27344326491,
+#                     0.7265567351])
+
+means1 = np.array([[0.5021755 , 0.48001064], 
+                  [0.48307691, 0.73329577]])
+
+
+covariances1 = np.array([[[0.00026569, 0.00025749],
+                        [0.00025749, 0.00407336]],
+                        [[ 0.00184485, -0.00123859],
+                        [-0.00123859,  0.01655933]]])
+
+weights1 = np.array([0.5083096399095122, 0.49169036009048783])
 
 box2 = np.array([0.5,0.3])
 
-means2 = np.array([[0.47891806, 0.9040961], 
-                  [0.50023427, 0.51117959]])
+means2 = np.array([[0.5021755 , 0.48001064], 
+                  [0.48307691, 0.73329577]])
 
 
-covariances2 = np.array([[[ 0.00438958, -0.00240083],
-                        [-0.00240083,  0.02641489]],
-                        [[ 0.0006874,  -0.0005142 ],
-                        [-0.0005142,   0.00842463]]])
+covariances2 = np.array([[[0.00026569, 0.00025749],
+                        [0.00025749, 0.00407336]],
+                        [[ 0.00184485, -0.00123859],
+                        [-0.00123859,  0.01655933]]])
 
-weights2 = np.array([0.27344326491,
-                    0.7265567351])
-
+weights2 = np.array([0.5083096399095122, 0.49169036009048783])
 
 
-P = [-0.2,0.0]
+P = [0.0,0.0]
 Xf = [0.7,0.3]
 x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
 y_limits = [-0.2, 0.2, 0.4]

@@ -29,20 +29,22 @@
     <visual>
       <origin xyz="0 0 -0.025"/>
       <geometry>
-        <box size="2.0 3.0 0.05"/>
+        <!-- <box size="2.0 3.0 0.05"/> -->
+        <box size="2.0 1.8 0.05"/>
       </geometry>
       <material name="brown"/>
     </visual>
     <collision>
       <origin xyz="0 0 -0.025"/>
       <geometry>
-        <box size="2.0 3.0 0.05"/>
+        <!-- <box size="2.0 3.0 0.05"/> -->
+        <box size="2.0 1.8 0.05"/>
       </geometry>
     </collision>
   </link>
   <joint name="table_leg1_joint" type="fixed">
     <parent link="table_top_link"/>
-    <origin rpy="0 0 0" xyz="0.455 0.70 -0.05"/>
+    <origin rpy="0 0 0" xyz="0.91 0.80 -0.05"/>
     <child link="table_leg1_link"/>
   </joint>
   <link name="table_leg1_link">
@@ -67,7 +69,7 @@
   </link>
   <joint name="table_leg2_joint" type="fixed">
     <parent link="table_top_link"/>
-    <origin rpy="0 0 0" xyz="0.455 -0.70 -0.05"/>
+    <origin rpy="0 0 0" xyz="0.91 -0.80 -0.05"/>
     <child link="table_leg2_link"/>
   </joint>
   <link name="table_leg2_link">
@@ -92,7 +94,7 @@
   </link>
   <joint name="table_leg3_joint" type="fixed">
     <parent link="table_top_link"/>
-    <origin rpy="0 0 0" xyz="-0.455 -0.70 -0.05"/>
+    <origin rpy="0 0 0" xyz="-0.91 -0.80 -0.05"/>
     <child link="table_leg3_link"/>
   </joint>
   <link name="table_leg3_link">
@@ -117,7 +119,7 @@
   </link>
   <joint name="table_leg4_joint" type="fixed">
     <parent link="table_top_link"/>
-    <origin rpy="0 0 0" xyz="-0.455 0.70 -0.05"/>
+    <origin rpy="0 0 0" xyz="-0.91 0.80 -0.05"/>
     <child link="table_leg4_link"/>
   </joint>
   <link name="table_leg4_link">

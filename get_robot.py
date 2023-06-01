@@ -7,7 +7,7 @@ from functions import get_stein_divergence
 class sim_robot_env:
     def __init__(self, use_sim, box_object):
 
-        self.physicsClient = p.connect(p.GUI) #DIRECT for no interface - GUI for interface
+        self.physicsClient = p.connect(p.DIRECT) #DIRECT for no interface - GUI for interface
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.resetSimulation()
         plane = p.loadURDF("plane_transparent.urdf")

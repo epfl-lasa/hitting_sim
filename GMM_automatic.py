@@ -54,7 +54,7 @@ def gmm_bic_score(estimator, X):
 
 
 param_grid = {
-    "n_components": range(1, 10),
+    "n_components": range(2, 3),
     "covariance_type": ["full"],        # We can put this"covariance_type": ["spherical", "tied", "diag", "full"]
 }                                       # but shape of grid_search.best_estimator_.covariances_ changes 
 grid_search = GridSearchCV(
@@ -62,7 +62,7 @@ grid_search = GridSearchCV(
 )
 
 
-hf = h5py.File('Data/data_good.h5', 'r')
+hf = h5py.File('Data/data_pres.h5', 'r')
 
 # Syntax
 parameters = hf['my_data']['params'][:]         #Hitting parameters        (input)
@@ -87,7 +87,7 @@ t = grid_search.fit(data)
 
 # gmm = GMM(n_components=3, random_state=0)
 # gmm.from_samples(data)
-
+'''
 # REGRESSION
 gmm = GMM(
    n_components=grid_search.best_estimator_.n_components, priors=grid_search.best_estimator_.weights_, 
@@ -119,6 +119,8 @@ p_des_act = x2_predicted_mean[0][3]
 x_impact_act = x2_predicted_mean[0][4]
 y_impact_act = x2_predicted_mean[0][5]
 X_ref_act = [x_impact_act,0,0.5]
+
+
 
 
 trailDuration = 0 # Make it 0 if you don't want the trail to end
@@ -187,7 +189,7 @@ while 1:
         break
 
 
-
+'''
 
 n_components = grid_search.best_estimator_.n_components
 
@@ -205,8 +207,8 @@ means = []
 covariances = []
 weights = []
 for i in range(n_components):
-    mean = grid_search.best_estimator_.means_[i][6:8]
-    covariance = grid_search.best_estimator_.covariances_[i][6:8,6:8]
+    mean = grid_search.best_estimator_.means_[i][4:6]
+    covariance = grid_search.best_estimator_.covariances_[i][4:6, 4:6]
     weight = grid_search.best_estimator_.weights_[i]
 
     means.append(mean)
