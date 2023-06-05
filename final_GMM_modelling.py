@@ -45,24 +45,26 @@ def fit_data(data):
     )
 
     t = grid_search.fit(data)   
-    n_components = grid_search.best_estimator_.n_components
-
-    means = []
-    covariances = []
-    weights = []
-    for i in range(n_components):
-        mean = grid_search.best_estimator_.means_[i][4:6]
-        covariance = grid_search.best_estimator_.covariances_[i][4:6, 4:6]
-        weight = grid_search.best_estimator_.weights_[i]
-
-        means.append(mean)
-        covariances.append(covariance)
-        weights.append(weight)
         
-    return n_components, means, covariances, weights
+    return grid_search.best_estimator_.n_components, grid_search.best_estimator_.means_,\
+          grid_search.best_estimator_.covariances_, grid_search.best_estimator_.weights_
 
 
 def plot_data(x, y, n_components, means, covariances):
+
+    means_2d = []
+    covariances_2d = []
+    weights_2d = []
+    for i in range(n_components):
+        mean = means[i][4:6]
+        covariance = covariances[i][4:6, 4:6]
+        weight = weights[i]
+
+        means_2d.append(mean)
+        covariances_2d.append(covariance)
+        weights_2d.append(weight)
+
+
     fig, ax = plt.subplots()
     ax.scatter(x, y, s=20,  label ='Final position of box')
 
@@ -70,7 +72,7 @@ def plot_data(x, y, n_components, means, covariances):
     ax.scatter(0.5,0.3, s=100, marker='+',color='g', label ='Initial position of box')
 
     for i in range(n_components):
-        ellipse.plot_ellipse(means[i],covariances[i],ax)
+        ellipse.plot_ellipse(means_2d[i],covariances_2d[i],ax)
 
     # x y axis name and title
     plt.xlabel('X-axis')
@@ -83,25 +85,47 @@ def plot_data(x, y, n_components, means, covariances):
 
 def write_model_data(model_data_path,n_components, means, covariances, weights):
     # Open the HDF5 file in write mode
-    hf = h5py.File(model_data_path, 'a')
+    hf_1 = h5py.File(model_data_path[0], 'a')
+    hf_2 = h5py.File(model_data_path[1], 'a')
+
     # Write the parameters
-    hf.create_dataset('n_components', data=n_components)
-    hf.create_dataset('means', data=means)
-    hf.create_dataset('covariances', data=covariances)
-    hf.create_dataset('weights', data=weights)
+    hf_1.create_dataset('n_components', data=n_components)
+    hf_1.create_dataset('means', data=means)
+    hf_1.create_dataset('covariances', data=covariances)
+    hf_1.create_dataset('weights', data=weights)
+    
+
+    means_2d = []
+    covariances_2d = []
+    weights_2d = []
+    for i in range(n_components):
+        mean = means[i][4:6]
+        covariance = covariances[i][4:6, 4:6]
+        weight = weights[i]
+
+        means_2d.append(mean)
+        covariances_2d.append(covariance)
+        weights_2d.append(weight)
+
+    hf_2.create_dataset('n_components', data=n_components)
+    hf_2.create_dataset('means', data=means_2d)
+    hf_2.create_dataset('covariances', data=covariances_2d)
+    hf_2.create_dataset('weights', data=weights_2d)
 
     # Close the HDF5 file
-    hf.close()
+    hf_1.close()
+    hf_2.close()
+
 
 
 
 
 data_path = 'Data/data_pres.h5'
-model_data_path = 'Data/model.h5'
+model_data_paths = ['Data/model_full.h5', 'Data/model_2d.h5']
 data, x, y =  read_data(data_path)
 n_components, means, covariances, weights = fit_data(data)
-#plot_data(x, y, n_components, means, covariances)
-write_model_data(model_data_path,n_components, means, covariances, weights)
+plot_data(x, y, n_components, means, covariances)
+write_model_data(model_data_paths,n_components, means, covariances, weights)
 
 
 print("n_components",n_components)
