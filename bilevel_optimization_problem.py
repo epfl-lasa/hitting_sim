@@ -8,34 +8,32 @@ import matplotlib.pyplot as plt
 import ellipse
 
 '''
-The optimisation variable
+Changing to two optimization variables
+
+The optimization variable for robot 1
+
+y = angle of the first hit (theta_1)
+
+The optimization variable for robot 2
+
 x[0] = x - the middle position of the box
 x[1] = y - the middle position of the box
-x[2] = theta_2
-x[3] = theta_1
-x[4] = slack variable if needed
-'''
+x[2] = theta_2 - the angle of the second hit
 
+'''
 
 # 1 and 2 correspond to the two GMMs which is the two robots
 
-def integral_intersection_area(x): #means1, covariances1, weights1, means2, covariances2, weights2):
-    R1 = np.array([[np.cos(x[3]), -np.sin(x[3])],
-                [np.sin(x[3]), np.cos(x[3])]])   
-    R2 = np.array([[np.cos(x[2]), -np.sin(x[2])],
-                [np.sin(x[2]), np.cos(x[2])]])
+def pdf_first_reach(theta, x): #means1, covariances1, weights1, means2, covariances2, weights2):
+    R1 = np.array([[np.cos(theta), -np.sin(theta)],
+                [np.sin(theta), np.cos(theta)]])   
 
     R1 = np.squeeze(R1)
-    R2 = np.squeeze(R2)
 
     new_means1=[]
     new_covariances1=[]
     dets_cov1 = []
-
-    new_means2=[]
-    new_covariances2=[]
-    dets_cov2 = []    
-
+  
     for i in range(n_components):
         mean1 = means1[i] + (P-box1)
         new_mean1 = R1 @ (mean1-P) + P
@@ -45,25 +43,36 @@ def integral_intersection_area(x): #means1, covariances1, weights1, means2, cova
         new_covariances1.append(new_covariance1)
         dets_cov1.append(det_cov1)
 
-        mean2 = means2[i] + (x[:2]-box2)
-        new_mean2 = R2 @ (mean2-x[:2]) + x[:2] 
-        new_covariance2 = R2 @ covariances2[i] @ R2.T
-        det_cov2 = np.linalg.det(new_covariance2)
-        new_means2.append(new_mean2)
-        new_covariances2.append(new_covariance2)
-        dets_cov2.append(det_cov2)
-
-    
+ 
     pdf = 0
     for i in range(n_components):
         pdf += weights1[i] * (2 * np.pi * np.sqrt(dets_cov1[i])) * multivariate_normal.pdf([x[0], x[1]], mean=new_means1[i], cov=new_covariances1[i])
     
-    return pdf
+    return -pdf
 
 
-# not integrate but evaluate the product at position of box at GMM2 (or just take max of product)
+# def cost_fun(x, type):
 
-def cost_fun(x, type):
+#     f = 0
+#     R2 = np.array([[np.cos(x[2]), -np.sin(x[2])],
+#                 [np.sin(x[2]), np.cos(x[2])]])
+#     for i in range(n_components):
+#         R2 = np.squeeze(R2)
+#         mean = means2[i] + (x[:2]-box2)
+#         new_mean = R2 @ (mean-x[:2]) + x[:2] 
+#         new_covariance = R2 @ covariances2[i] @ R2.T
+#         det_cov = np.linalg.det(new_covariance)
+#         pdf = weights2[i]*(2 * np.pi * np.sqrt(det_cov))* multivariate_normal.pdf(Xf, mean=new_mean, cov=new_covariance)
+#         f = f + pdf
+    
+#     if type == 'golf':
+#         return -f - 0.2*(pdf_first_reach(x)-0.5)
+#     else:
+#         return -f*pdf_first_reach(x) - 0.00*(pdf_first_reach(x) - intersection_threshold)
+
+# For the bilevel optimization problem
+
+def cost_fun_bilevel(x):
 
     f = 0
     R2 = np.array([[np.cos(x[2]), -np.sin(x[2])],
@@ -77,12 +86,8 @@ def cost_fun(x, type):
         pdf = weights2[i]*(2 * np.pi * np.sqrt(det_cov))* multivariate_normal.pdf(Xf, mean=new_mean, cov=new_covariance)
         f = f + pdf
     
-    if type == 'golf':
-        return -f - 0.2*(integral_intersection_area(x)-0.5)
-    else:
-        return -f*integral_intersection_area(x) - 0.00*(integral_intersection_area(x) - intersection_threshold)
+    return -f
 
-   
 def fun1(x,Xf):
 
     f = 0
@@ -139,7 +144,6 @@ def table_consy_2(x,x_limits,y_limits,direction):
     else:
         return x[1]-(y_limits[0]+margin) 
 
-
 # Box always on Table
 def cons_1(x, alpha, Xf, x_limits, direction):
     if direction[1] == 'right':
@@ -188,7 +192,7 @@ def cons_4(x, alpha, Xf, x_limits, y_limits, direction):
 def constraints(Xf, x_limits, y_limits, direction):
     cons = []
 
-    # cons.append({'type': 'ineq', 'fun': lambda x:  integral_intersection_area(x) - intersection_threshold}) #+ 0.001*x[4]},
+    # cons.append({'type': 'ineq', 'fun': lambda y:  pdf_first_reach(x) - intersection_threshold}) #+ 0.001*x[4]},
         
     for a in np.linspace(0.0,1.0,num=30):
         cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_1(x, a, Xf, x_limits, direction)})
@@ -202,7 +206,6 @@ def constraints(Xf, x_limits, y_limits, direction):
         cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_4(x, a, P, x_limits, y_limits, direction)})
     
     return cons
-
 
 def guess(P,Xf, table_direction):
     guess = [0,0,0,0]
@@ -341,19 +344,34 @@ def plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap,colo
     ax.legend()
     plt.show()
 
-
 def find_sol(environment,x_limits,y_limits,direction, intersection_threshold):#P,Xf,means2, covariances2,n_components):  
     if environment:
         cons = constraints(Xf, x_limits, y_limits, direction)
     else:
-        cons = ({'type': 'ineq', 'fun': lambda x:  integral_intersection_area(x) - intersection_threshold})
+        cons = ({'type': 'ineq', 'fun': lambda x:  pdf_first_reach(x) - intersection_threshold})
 
     guess_ = guess(P,Xf,direction)
-    result = minimize(cost_fun, guess_, method='COBYLA', constraints=cons, tol=1e-8, args='golf', options={'disp': True})
-    # Adapt tol to avoid local minima
+    result = minimize(cost_fun_bilevel, guess_, method='COBYLA', constraints=cons, tol=1e-8, options={'disp': True})
     
     return result.x
 
+def find_theta(P,Xm,means, covariances,n_components): 
+   if Xm[0]<P[0]:
+       if Xm[1]>P[1]:
+           guess = np.arctan((P[0]-Xm[0])/(Xm[1]-P[1]))
+       else:
+           guess = np.arctan((P[0]-Xm[0])/(Xm[1]-P[1])) + np.pi
+   else:
+        if Xm[1]<P[1]:
+           guess = np.arctan((P[0]-Xm[0])/(Xm[1]-P[1])) + np.pi  
+        else:
+            guess = np.arctan((Xm[1]-P[1])/(Xm[1]-P[1])) + (3/2)*np.pi   
+   print("theta_1 guess is: ", guess)
+   
+   bnds = Bounds([0], [2*np.pi])
+   result = minimize(pdf_first_reach, guess, method='Nelder-Mead', args=Xm, bounds= bnds, options={'disp': True}) 
+   print("pdf is: ", pdf_first_reach(result.x,Xm)) 
+   return result.x
 
 n_components = 2
 
@@ -390,7 +408,7 @@ weights2 = np.array([0.5083096399095122, 0.49169036009048783])
 # table_direction = ['up','right']
 # environment = True
 
-P = [0.8,-0.18]
+P = [0.6,-0.18]
 Xf = [-0.0,0.3]
 x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
 y_limits = [-0.2, 0.2, 0.6]
@@ -438,12 +456,19 @@ intersection_threshold = 0.6
 
 X_opt = find_sol(environment, x_limits, y_limits, table_direction, intersection_threshold)
 
+
+print(X_opt)
+
+theta_1 = find_theta(P, X_opt[:2], means1, covariances1, n_components)
+
+X_opt[3] = theta_1
+print("theta_1 = ", np.rad2deg(theta_1))
 print("theta_1 = ", np.rad2deg(X_opt[3]))
 print("Xm = ", X_opt[:2])
 print("theta_2 = ", np.rad2deg(X_opt[2]))
 
-print("intersection = ", integral_intersection_area(X_opt))
-print("objective function = ", cost_fun(X_opt, 'golf'))
+# print("intersection = ", pdf_first_reach(X_opt))
+print("objective function = ", cost_fun_bilevel(X_opt))
 
 plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap,colormap1)
 
