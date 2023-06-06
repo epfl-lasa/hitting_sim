@@ -92,10 +92,7 @@ def cost_fun_bilevel(x):
         det_cov = np.linalg.det(new_covariance)
         pdf = weights2[i]*(2 * np.pi * np.sqrt(det_cov))* multivariate_normal.pdf(Xf, mean=new_mean, cov=new_covariance)
         f = f + pdf
-    if bilevel == False:
-        return -f
-    else:
-        return -f #- 1.0*(bilevel_pdf_first_reach(x))
+    return -f #- 1.0*(bilevel_pdf_first_reach(x))
 
 def fun1(x,Xf):
 
@@ -236,27 +233,20 @@ def bilevel_constraints(Xf, x_limits, y_limits, direction):
 
 def guess(P,Xf, table_direction):
     guess = [0,0,0,0]
-
+    guess[0] = (P[0]+Xf[0])/2
+    guess[1] = (P[1]+Xf[1])/2
     if table_direction[0] == 'up' and table_direction[1] == 'right':
-        guess[0] = (P[0]+Xf[0])/2
-        guess[1] = (P[1]+Xf[1])/2
         guess[2] = np.arctan2(Xf[1]-guess[1],Xf[0]-guess[0])-np.pi/2
         guess[3] = np.arctan2(guess[1]-P[1],guess[0]-P[0]) -np.pi/2
     elif table_direction[0] == 'up' and table_direction[1] == 'left':
-        guess[0] = (P[0]+Xf[0])/2
-        guess[1] = (P[1]+Xf[1])/2
-        guess[2] = np.arctan2(guess[0]-Xf[0],Xf[1]-guess[1])#+np.pi/2
-        guess[3] = np.arctan2(P[0]-guess[0],guess[1]-P[1]) #+np.pi/2
+        guess[2] = np.arctan2(Xf[1]-guess[1],Xf[0]-guess[0])-np.pi/2
+        guess[3] = np.arctan2(guess[1]-P[1],guess[0]-P[0]) -np.pi/2
     elif table_direction[0] == 'down' and table_direction[1] == 'left':
-        guess[0] = (P[0]+Xf[0])/2
-        guess[1] = (P[1]+Xf[1])/2
-        guess[2] = np.arctan2(guess[1]-Xf[1],guess[0]-Xf[0])+np.pi/2
-        guess[3] = np.arctan2(P[1]-guess[1],P[0]-guess[0]) +np.pi/2
+        guess[2] = np.arctan2(Xf[1]-guess[1],Xf[0]-guess[0])+3*np.pi/2
+        guess[3] = np.arctan2(guess[1]-P[1],guess[0]-P[0]) +3*np.pi/2
     else:
-        guess[0] = (P[0]+Xf[0])/2
-        guess[1] = (P[1]+Xf[1])/2
-        guess[2] = np.arctan2(Xf[0]-guess[0],guess[1]-Xf[1])+np.pi
-        guess[3] = np.arctan2(guess[0]-P[0],P[1]-guess[1]) +np.pi
+        guess[2] = np.arctan2(Xf[1]-guess[1],Xf[0]-guess[0])- np.pi/2
+        guess[3] = np.arctan2(guess[1]-P[1],guess[0]-P[0]) - np.pi/2
     return guess
 
 def plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap,colormap1):
@@ -394,17 +384,6 @@ def bilevel_find_sol(environment,x_limits,y_limits,direction, intersection_thres
     return result.x
 
 def find_theta(P,Xm, guess, means, covariances,n_components): 
-#    if Xm[0]<P[0]:
-#        if Xm[1]>P[1]:
-#            guess = np.arctan((P[0]-Xm[0])/(Xm[1]-P[1]))
-#        else:
-#            guess = np.arctan((P[0]-Xm[0])/(Xm[1]-P[1])) + np.pi
-#    else:
-#         if Xm[1]<P[1]:
-#            guess = np.arctan((P[0]-Xm[0])/(Xm[1]-P[1])) + np.pi  
-#         else:
-#             guess = np.arctan((Xm[1]-P[1])/(Xm[1]-P[1])) + (3/2)*np.pi   
-#    print("theta_1 guess is: ", guess)
    
    bnds = Bounds([-np.pi], [np.pi])
    result = minimize(pdf_first_reach, guess, method='Nelder-Mead', args=Xm, bounds= bnds, options={'disp': True}) 
@@ -439,12 +418,12 @@ covariances2 = np.array([[[0.00026569, 0.00025749],
 weights2 = np.array([0.5083096399095122, 0.49169036009048783])
 
 
-# P = [0.0,0.0]
-# Xf = [0.7,0.3]
-# x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-# y_limits = [-0.2, 0.2, 0.4]
-# table_direction = ['up','right']
-# environment = True
+P = [0.2,0.0]
+Xf = [0.7,0.3]
+x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
+y_limits = [-0.2, 0.2, 0.4]
+table_direction = ['up','right']
+environment = True
 
 # P = [0.3,-0.18]
 # Xf = [-0.0,0.3]
@@ -453,12 +432,12 @@ weights2 = np.array([0.5083096399095122, 0.49169036009048783])
 # table_direction = ['up','left']
 # environment = True
 
-P = [0.05,0.38]
-Xf = [0.7,0.0]
-x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-y_limits = [-0.2, 0.2, 0.4]
-table_direction = ['down','right']
-environment = True
+# P = [0.05,0.38]
+# Xf = [0.7,0.0]
+# x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
+# y_limits = [-0.2, 0.2, 0.4]
+# table_direction = ['down','right']
+# environment = True
 
 # P = [0.5,0.38]
 # Xf = [0.0,0.0]
