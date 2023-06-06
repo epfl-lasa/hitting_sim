@@ -383,6 +383,7 @@ def simulate(X_i_robot, theta_i_robot, X_m_robot, theta_m_robot, h_dir1, p_des1,
 
     # initialize the robot and the box
     iiwa.set_to_joint_position(q_init)
+    iiwa.set_to_joint_position2(q_init)
     iiwa.reset_box(box_position_init, box_orientation_init)
     lambda_dir = h_dir1.T @ Lambda_init @ h_dir1
     lambda_dir2 = h_dir2.T @ Lambda_init @ h_dir2
@@ -435,14 +436,15 @@ def simulate(X_i_robot, theta_i_robot, X_m_robot, theta_m_robot, h_dir1, p_des1,
         #if (iiwa.get_box_position_orientation()[0][1]>0.5):
             #x_b = np.array(iiwa.get_box_position_orientation()[0]) + np.array([0,0.2,0])
             while 1:
+                print(np.array(iiwa.get_box_position_orientation()[0]))
                 X_qp2 = np.array(iiwa.get_ee_position2())  #########
                 
-                #x_b = np.array(iiwa.get_box_position_orientation()[0])
+                x_b = np.array(iiwa.get_box_position_orientation()[0])
                 
                 if not is_hit2:
-                    dX = linear_hitting_ds_pre_impact(A, X_qp2, X_ref2, h_dir2, p_des2, lambda_dir2, box.mass)
+                    dX = linear_hitting_ds_pre_impact(A, X_qp2, X_ref2, h_dir2, 1.0, lambda_dir2, box.mass)
                 else:
-                    dX = linear_ds(A, X_qp2, X_ref)
+                    dX = linear_ds(A, X_qp2, X_ref2)
     
                 hit_dir = dX / np.linalg.norm(dX)
     
@@ -458,17 +460,90 @@ def simulate(X_i_robot, theta_i_robot, X_m_robot, theta_m_robot, h_dir1, p_des1,
                 if(iiwa.get_collision_points2().size != 0):
                     is_hit2 = True
                     iiwa.get_collision_position2()
-                    
-                if(is_hit1 and is_hit2 and iiwa.get_box_speed() < 0.001 and time_now - time_init > contactTime):
-                    break
-            if(is_hit1 and is_hit2 and iiwa.get_box_speed() < 0.001 and time_now - time_init > contactTime):
-                break
+        
+                iiwa.step()
+                time_now = time.time()
+
+            #     if(is_hit1 and is_hit2 and iiwa.get_box_speed() < 0.001 and time_now - time_init > contactTime):
+            #         break
+            # if(is_hit1 and is_hit2 and iiwa.get_box_speed() < 0.001 and time_now - time_init > contactTime):
+            #     break
 
 def rot_pts(X, pivot, theta):
     R = np.array([[np.cos(theta), -np.sin(theta)],
             [np.sin(theta), np.cos(theta)]])
     X_rot = R @ (X - pivot) + pivot
     return X_rot
+
+
+
+def simulation_parameters(X_opt, Xi, Xf, box1, box2):
+    theta_i_robot = X_opt[3]
+    theta_m_robot = X_opt[2]
+
+    # theta_i_star = theta_i_robot - box_robot_angle
+    # X_i_robot = Xi-box_robot_dist*np.array([-np.sin(theta_i_star),np.cos(theta_i_star)])
+    # print("X_i_robot", X_i_robot)
+
+
+    box_robot_dist = np.sqrt(box1[0]**2 + box1[1]**2)
+    box_robot_angle = np.arctan2(box1[0],box1[1])
+
+    # Robot 1 position calculated from Xi
+    Xi_robot0 = Xi - box_robot_dist*np.array([np.sin(box_robot_angle),np.cos(box_robot_angle)])
+    # Robot 1 position rotated
+    X_i_robot = rot_pts(Xi_robot0, Xi, theta_i_robot)
+
+    X_m =  X_opt[:2]
+
+    # Robot 2 position calculated from Xm
+    X_m_robot0 = X_m - box_robot_dist*np.array([np.sin(box_robot_angle),np.cos(box_robot_angle)])
+    # Robot 2 position rotated
+    X_m_robot = rot_pts(X_m_robot0, X_m, theta_m_robot)
+
+
+    # COLLECT DATA WITHOUT TABLE !!!!!
+
+    # Bring Xm and Xf to reference of reachable space (to regress)
+    X_m_rot = rot_pts(X_m, Xi, -theta_i_robot) - (Xi - box1)
+    X_f_rot = rot_pts(Xf, X_m, -theta_m_robot) - (X_m - box2)
+
+    ### Determine hitting parameters to reach Xm
+    x_reg = X_m_rot[0]
+    y_reg = X_m_rot[1]
+    z_reg = 0.44922494
+    known_parameters = [[x_reg, y_reg, z_reg]]  
+    h_dir1, p_des1, X_ref1 = regress(n_components_full, means_full, covariances_full, weights_full, known_parameters)
+    # Rotate back hitting point to real scenario
+    X_ref_rot1 = rot_pts(np.array(X_ref1[:2]), Xi, theta_i_robot)
+    X_ref1[:2] = X_ref_rot1
+    X_ref1[2] = X_ref1[2]-0.4   # to be on the floor (HAVE TO CHANGE)
+    # Rotate back hitting direction to real scenario
+    h_dir_rot1 = []
+    h_dir_rot1_ = rot_pts(np.array(h_dir1[:2]), 0, theta_i_robot)
+    h_dir_rot1 = [0.0,0.0,0.0]
+    h_dir_rot1[:2] = h_dir_rot1_
+    h_dir_rot1 = np.array(h_dir_rot1)
+
+    ### Determine hitting parameters to reach Xf
+    x_reg = X_f_rot[0]
+    y_reg = X_f_rot[1]
+    z_reg = 0.44922494
+    known_parameters = [[x_reg, y_reg, z_reg]]  
+    h_dir2, p_des2, X_ref2 = regress(n_components_full, means_full, covariances_full, weights_full, known_parameters)
+    # Rotate back hitting point to real scenario
+    X_ref_rot2 = rot_pts(np.array(X_ref2[:2]), X_m, theta_m_robot)
+    X_ref2[:2] = X_ref_rot2
+    X_ref2[2] = X_ref2[2]-0.4    # to be on the floor (HAVE TO CHANGE)
+    # Rotate back hitting direction to real scenario
+    h_dir_rot2 = []
+    h_dir_rot2_ = rot_pts(np.array(h_dir2[:2]), 0, theta_m_robot)
+    h_dir_rot2 = [0.0,0.0,0.0]
+    h_dir_rot2[:2] = h_dir_rot2_
+    h_dir_rot2 = np.array(h_dir_rot2)
+
+    return X_i_robot, theta_i_robot, X_m_robot, theta_m_robot, h_dir_rot1, p_des1, X_ref1, h_dir_rot2, p_des2, X_ref2
+
 
 
 model_data_paths = ['Data/model_full.h5', 'Data/model_2d.h5']
@@ -498,8 +573,6 @@ n_components_full, means_full, covariances_full, weights_full,\
 box1 = np.array([0.5,0.3])
 box2 = np.array([0.5,0.3])
 
-box_robot_dist = np.sqrt(box1[0]**2 + box1[1]**2)
-box_robot_angle = np.arctan2(box1[0],box1[1])
 
 Xi = np.array([0.5,0.3])
 Xf = [1.2,0.6]
@@ -522,69 +595,8 @@ plot_optimization(X_opt, environment, x_limits, y_limits, table_direction, color
                        Xi, Xf, box1, box2, n_components_2d, means_2d, covariances_2d, weights_2d,\
                          n_components_2d, means_2d, covariances_2d, weights_2d)
 
+X_i_robot, theta_i_robot, X_m_robot,theta_m_robot,\
+      h_dir_rot1, p_des1, X_ref1, h_dir_rot2, p_des2, X_ref2 = simulation_parameters(X_opt, Xi, Xf, box1, box2)
 
 
-theta_i_robot = X_opt[3]
-theta_m_robot = X_opt[2]
-
-# theta_i_star = theta_i_robot - box_robot_angle
-# X_i_robot = Xi-box_robot_dist*np.array([-np.sin(theta_i_star),np.cos(theta_i_star)])
-# print("X_i_robot", X_i_robot)
-
-
-
-# Robot 1 position calculated from Xi
-Xi_robot0 = Xi - box_robot_dist*np.array([np.sin(box_robot_angle),np.cos(box_robot_angle)])
-# Robot 1 position rotated
-X_i_robot = rot_pts(Xi_robot0, Xi, theta_i_robot)
-
-X_m =  X_opt[:2]
-
-# Robot 2 position calculated from Xm
-X_m_robot0 = X_m - box_robot_dist*np.array([np.sin(box_robot_angle),np.cos(box_robot_angle)])
-# Robot 2 position rotated
-X_m_robot = rot_pts(X_m_robot0, X_m, theta_m_robot)
-
-
-# COLLECT DATA WITHOUT TABLE !!!!!
-
-# Bring Xm and Xf to reference of reachable space (to regress)
-X_m_rot = rot_pts(X_m, Xi, -theta_i_robot) - (Xi - box1)
-X_f_rot = rot_pts(Xf, X_m, -theta_m_robot) - (X_m - box2)
-
-### Determine hitting parameters to reach Xm
-x_reg = X_m_rot[0]
-y_reg = X_m_rot[1]
-z_reg = 0.44922494
-known_parameters = [[x_reg, y_reg, z_reg]]  
-h_dir, p_des, X_ref = regress(n_components_full, means_full, covariances_full, weights_full, known_parameters)
-# Rotate back hitting point to real scenario
-X_ref_rot = rot_pts(np.array(X_ref[:2]), Xi, theta_i_robot)
-X_ref[:2] = X_ref_rot
-X_ref[2] = X_ref[2]-0.4   # to be on the floor (HAVE TO CHANGE)
-# Rotate back hitting direction to real scenario
-h_dir_rot = []
-h_dir_rot1 = rot_pts(np.array(h_dir[:2]), 0, theta_i_robot)
-h_dir_rot = [0.0,0.0,0.0]
-h_dir_rot[:2] = h_dir_rot1
-h_dir_rot = np.array(h_dir_rot)
-
-### Determine hitting parameters to reach Xf
-x_reg = X_f_rot[0]
-y_reg = X_f_rot[1]
-z_reg = 0.44922494
-known_parameters = [[x_reg, y_reg, z_reg]]  
-h_dir2, p_des2, X_ref2 = regress(n_components_full, means_full, covariances_full, weights_full, known_parameters)
-# Rotate back hitting point to real scenario
-X_ref_rot2 = rot_pts(np.array(X_ref2[:2]), X_m, theta_m_robot)
-X_ref2[:2] = X_ref_rot2
-X_ref2[2] = X_ref2[2]-0.4    # to be on the floor (HAVE TO CHANGE)
-# Rotate back hitting direction to real scenario
-h_dir_rot2 = []
-h_dir_rot_ = rot_pts(np.array(h_dir2[:2]), 0, theta_m_robot)
-h_dir_rot2 = [0.0,0.0,0.0]
-h_dir_rot2[:2] = h_dir_rot_
-h_dir_rot2 = np.array(h_dir_rot2)
-
-
-simulate(X_i_robot, theta_i_robot, X_m_robot, theta_m_robot, h_dir_rot, p_des, X_ref, Xi, h_dir_rot2, p_des2, X_ref2)
+simulate(X_i_robot, theta_i_robot, X_m_robot, theta_m_robot, h_dir_rot1, p_des1, X_ref1, Xi, h_dir_rot2, p_des2, X_ref2)
