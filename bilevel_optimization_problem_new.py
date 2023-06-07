@@ -24,11 +24,15 @@ x[2] = theta_2 - the angle of the second hit
 
 # 1 and 2 correspond to the two GMMs which is the two robots
 
+def rotation_z(angle):
+    return np.array([[np.cos(angle), -np.sin(angle)],
+                    [np.sin(angle), np.cos(angle)]])
+
+
 bilevel = True
 
 def pdf_first_reach(theta, x): #means1, covariances1, weights1, means2, covariances2, weights2):
-    R1 = np.array([[np.cos(theta), -np.sin(theta)],
-                [np.sin(theta), np.cos(theta)]])   
+    R1 = rotation_z(theta) 
 
     R1 = np.squeeze(R1)
 
@@ -53,8 +57,7 @@ def pdf_first_reach(theta, x): #means1, covariances1, weights1, means2, covarian
     return -pdf
 
 def bilevel_pdf_first_reach(y):
-    R1 = np.array([[np.cos(y[3]), -np.sin(y[3])],
-                [np.sin(y[3]), np.cos(y[3])]])   
+    R1 = rotation_z(y[3])
 
     R1 = np.squeeze(R1)
 
@@ -82,8 +85,7 @@ def bilevel_pdf_first_reach(y):
 def cost_fun_bilevel(x):
 
     f = 0
-    R2 = np.array([[np.cos(x[2]), -np.sin(x[2])],
-                [np.sin(x[2]), np.cos(x[2])]])
+    R2 = rotation_z(x[2])
     for i in range(n_components):
         R2 = np.squeeze(R2)
         mean = means2[i] + (x[:2]-box2)
@@ -92,7 +94,7 @@ def cost_fun_bilevel(x):
         det_cov = np.linalg.det(new_covariance)
         pdf = weights2[i]*(2 * np.pi * np.sqrt(det_cov))* multivariate_normal.pdf(Xf, mean=new_mean, cov=new_covariance)
         f = f + pdf
-    return -f #- 1.0*(bilevel_pdf_first_reach(x))
+    return -f - 0.0*(bilevel_pdf_first_reach(x))
 
 def fun1(x,Xf):
 
@@ -235,18 +237,8 @@ def guess(P,Xf, table_direction):
     guess = [0,0,0,0]
     guess[0] = (P[0]+Xf[0])/2
     guess[1] = (P[1]+Xf[1])/2
-    if table_direction[0] == 'up' and table_direction[1] == 'right':
-        guess[2] = np.arctan2(Xf[1]-guess[1],Xf[0]-guess[0])-np.pi/2
-        guess[3] = np.arctan2(guess[1]-P[1],guess[0]-P[0]) -np.pi/2
-    elif table_direction[0] == 'up' and table_direction[1] == 'left':
-        guess[2] = np.arctan2(Xf[1]-guess[1],Xf[0]-guess[0])-np.pi/2
-        guess[3] = np.arctan2(guess[1]-P[1],guess[0]-P[0]) -np.pi/2
-    elif table_direction[0] == 'down' and table_direction[1] == 'left':
-        guess[2] = np.arctan2(Xf[1]-guess[1],Xf[0]-guess[0])+3*np.pi/2
-        guess[3] = np.arctan2(guess[1]-P[1],guess[0]-P[0]) +3*np.pi/2
-    else:
-        guess[2] = np.arctan2(Xf[1]-guess[1],Xf[0]-guess[0])- np.pi/2
-        guess[3] = np.arctan2(guess[1]-P[1],guess[0]-P[0]) - np.pi/2
+    guess[2] = np.arctan2(-Xf[0]+guess[0],Xf[1]-guess[1])
+    guess[3] = np.arctan2(-guess[0]+P[0],guess[1]-P[1])
     return guess
 
 def plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap,colormap1):
@@ -320,12 +312,9 @@ def plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap,colo
             ax.plot([x_limits[0],x_limits[2]],y_limits[0]*np.ones(2),color='k', label ='Table')
 
 
-    R1 = np.array([[np.cos(X_opt[3]), -np.sin(X_opt[3])],
-                [np.sin(X_opt[3]), np.cos(X_opt[3])]])   
+    R1 = rotation_z(X_opt[3])   
 
-    R2 = np.array([[np.cos(X_opt[2]), -np.sin(X_opt[2])],
-                [np.sin(X_opt[2]), np.cos(X_opt[2])]])
-        
+    R2 = rotation_z(X_opt[2])
     new_means1=[]
     new_covariances1=[]
     new_means2=[]
@@ -418,12 +407,12 @@ covariances2 = np.array([[[0.00026569, 0.00025749],
 weights2 = np.array([0.5083096399095122, 0.49169036009048783])
 
 
-P = [0.2,0.0]
-Xf = [0.7,0.3]
-x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-y_limits = [-0.2, 0.2, 0.4]
-table_direction = ['up','right']
-environment = True
+# P = [0.2,0.0]
+# Xf = [0.7,0.3]
+# x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
+# y_limits = [-0.2, 0.2, 0.4]
+# table_direction = ['up','right']
+# environment = True
 
 # P = [0.3,-0.18]
 # Xf = [-0.0,0.3]
@@ -439,12 +428,12 @@ environment = True
 # table_direction = ['down','right']
 # environment = True
 
-# P = [0.5,0.38]
-# Xf = [0.0,0.0]
-# x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-# y_limits = [-0.2, 0.15, 0.4]
-# table_direction = ['down','left']
-# environment = True
+P = [0.5,0.38]
+Xf = [0.0,0.0]
+x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
+y_limits = [-0.2, 0.15, 0.4]
+table_direction = ['down','left']
+environment = True
 
 # P = [0.0,0.0]
 # Xf = [1.0,0.7]
@@ -471,16 +460,12 @@ colormap = True
 colormap1 = True
 intersection_threshold = 0.5
 
-if bilevel == False:
-    X_opt = find_sol(environment, x_limits, y_limits, table_direction, intersection_threshold)
-    theta_1 = find_theta(P, X_opt[:2], means1, covariances1, n_components)
-    X_opt[3] = theta_1
-else:
-    X_opt = bilevel_find_sol(environment, x_limits, y_limits, table_direction, intersection_threshold)
-    print("X_opt guess = ", X_opt[3])
-    theta_1 = find_theta(P, X_opt[:2], X_opt[3], means1, covariances1, n_components)
-    print("theta_1 = ",(theta_1))
-    X_opt[3] = theta_1
+
+X_opt = bilevel_find_sol(environment, x_limits, y_limits, table_direction, intersection_threshold)
+print("X_opt guess = ", X_opt[3])
+theta_1 = find_theta(P, X_opt[:2], X_opt[3], means1, covariances1, n_components)
+print("theta_1 = ",(theta_1))
+X_opt[3] = theta_1
 
 print("theta_1 = ", np.rad2deg(X_opt[3]))
 print("Xm = ", X_opt[:2])
