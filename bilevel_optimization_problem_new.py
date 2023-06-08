@@ -75,18 +75,16 @@ def bilevel_pdf_first_reach(y):
 # For the bilevel optimization problem
 
 def cost_fun_bilevel(x):
-
     f = 0
-    R2 = rotation_z(x[2])
+    R2 = np.squeeze(rotation_z(x[2]))
     for i in range(n_components):
-        R2 = np.squeeze(R2)
         mean = means2[i] + (x[:2]-box2)
         new_mean = R2 @ (mean-x[:2]) + x[:2] 
         new_covariance = R2 @ covariances2[i] @ R2.T
         det_cov = np.linalg.det(new_covariance)
         pdf = weights2[i]*(2 * np.pi * np.sqrt(det_cov))* multivariate_normal.pdf(Xf, mean=new_mean, cov=new_covariance)
         f = f + pdf
-    return -f - 0.0*(bilevel_pdf_first_reach(x))
+    return -f + (bilevel_pdf_first_reach(x))
 
 def fun1(x,Xf):
 
@@ -171,7 +169,7 @@ def bilevel_constraints(Xf, x_limits, y_limits, direction):
     
     return cons
 
-def guess(P,Xf):
+def guess(P,Xf):  # Guess is independent of the direction now
     guess = [0,0,0,0]
     guess[0] = (P[0]+Xf[0])/2
     guess[1] = (P[1]+Xf[1])/2
