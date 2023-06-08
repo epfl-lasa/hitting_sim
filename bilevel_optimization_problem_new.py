@@ -29,9 +29,7 @@ def rotation_z(angle):
                     [np.sin(angle), np.cos(angle)]])
 
 def pdf_first_reach(theta, x): #means1, covariances1, weights1, means2, covariances2, weights2):
-    R1 = rotation_z(theta) 
-
-    R1 = np.squeeze(R1)
+    R1 = np.squeeze(rotation_z(theta)) 
 
     new_means1=[]
     new_covariances1=[]
@@ -45,7 +43,6 @@ def pdf_first_reach(theta, x): #means1, covariances1, weights1, means2, covarian
         new_means1.append(new_mean1)
         new_covariances1.append(new_covariance1)
         dets_cov1.append(det_cov1)
-
  
     pdf = 0
     for i in range(n_components):
@@ -54,9 +51,7 @@ def pdf_first_reach(theta, x): #means1, covariances1, weights1, means2, covarian
     return -pdf
 
 def bilevel_pdf_first_reach(y):
-    R1 = rotation_z(y[3])
-
-    R1 = np.squeeze(R1)
+    R1 = np.squeeze(rotation_z(y[3]))
 
     new_means1=[]
     new_covariances1=[]
