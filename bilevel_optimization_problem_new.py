@@ -28,9 +28,6 @@ def rotation_z(angle):
     return np.array([[np.cos(angle), -np.sin(angle)],
                     [np.sin(angle), np.cos(angle)]])
 
-
-bilevel = True
-
 def pdf_first_reach(theta, x): #means1, covariances1, weights1, means2, covariances2, weights2):
     R1 = rotation_z(theta) 
 
@@ -115,43 +112,6 @@ def fun1(x,Xf):
 # CONSTRAINTS
 margin = 0.05
 
-# Table constraints:
-def table_consx_1(x,x_limits,y_limits,direction):
-    if direction[1] == 'right':
-        return x[0]-(x_limits[0]+margin) 
-    else:
-        if direction[0] == 'up':
-            return x[0]-(x_limits[0]+margin) if (x[1]>y_limits[1]) else x[0]-(x_limits[1]+margin) 
-        else:
-            return x[0]-(x_limits[0]+margin) if (x[1]<y_limits[1]) else x[0]-(x_limits[1]+margin) 
-
-def table_consx_2(x,x_limits,y_limits,direction):
-    if direction[1] == 'right':
-        if direction[0] == 'up':
-            return -x[0]+(x_limits[2]-margin)  if (x[1]>y_limits[1]) else -x[0]+(x_limits[1]-margin) 
-        else:
-            return -x[0]+(x_limits[2]-margin)  if (x[1]<y_limits[1]) else -x[0]+(x_limits[1]-margin) 
-    else:
-        -x[0]+(x_limits[2]-margin) 
-
-def table_consy_1(x,x_limits,y_limits,direction):
-    if direction[0] == 'up':
-        return -x[1]+(y_limits[2]-margin)  
-    else:
-        if direction[1] == 'right':
-            return -x[1]+(y_limits[2]-margin)  if(x[0]<x_limits[1]) else -x[1]+(y_limits[1]-margin) 
-        else:
-            return -x[1]+(y_limits[2]-margin)  if(x[0]>x_limits[1]) else -x[1]+(y_limits[1]-margin) 
-
-def table_consy_2(x,x_limits,y_limits,direction):
-    if direction[0] == 'up':
-        if direction[1] == 'right':
-            return x[1]-(y_limits[0]+margin)  if(x[0]<x_limits[1]) else x[1]-(y_limits[1]+margin) 
-        else:
-            return x[1]-(y_limits[0]+margin)  if(x[0]>x_limits[1]) else x[1]-(y_limits[1]+margin) 
-    else:
-        return x[1]-(y_limits[0]+margin) 
-
 # Box always on Table
 def cons_1(x, alpha, Xf, x_limits, direction):
     if direction[1] == 'right':
@@ -197,23 +157,6 @@ def cons_4(x, alpha, Xf, x_limits, y_limits, direction):
     else:
         return ((1 - alpha) * x[1] + alpha * Xf[1])-(y_limits[0]+margin) 
 
-def constraints(Xf, x_limits, y_limits, direction):
-    cons = []
-
-    # cons.append({'type': 'ineq', 'fun': lambda y:  pdf_first_reach(x) - intersection_threshold}) #+ 0.001*x[4]},
-        
-    for a in np.linspace(0.0,1.0,num=30):
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_1(x, a, Xf, x_limits, direction)})
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_2(x, a, Xf, x_limits, y_limits, direction)})
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_3(x, a, Xf, y_limits, direction)})
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_4(x, a, Xf, x_limits, y_limits, direction)})
-
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_1(x, a, P, x_limits, direction)})
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_2(x, a, P, x_limits, y_limits, direction)})
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_3(x, a, P, y_limits, direction)})
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_4(x, a, P, x_limits, y_limits, direction)})
-    
-    return cons
 
 def bilevel_constraints(Xf, x_limits, y_limits, direction):
     cons = []
@@ -233,7 +176,7 @@ def bilevel_constraints(Xf, x_limits, y_limits, direction):
     
     return cons
 
-def guess(P,Xf, table_direction):
+def guess(P,Xf):
     guess = [0,0,0,0]
     guess[0] = (P[0]+Xf[0])/2
     guess[1] = (P[1]+Xf[1])/2
@@ -350,24 +293,13 @@ def plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap,colo
     ax.legend()
     plt.show()
 
-def find_sol(environment,x_limits,y_limits,direction, intersection_threshold):#P,Xf,means2, covariances2,n_components):  
-    if environment:
-        cons = constraints(Xf, x_limits, y_limits, direction)
-    else:
-        cons = ({'type': 'ineq', 'fun': lambda x:  pdf_first_reach(x) - intersection_threshold})
-
-    guess_ = guess(P,Xf,direction)
-    result = minimize(cost_fun_bilevel, guess_, method='COBYLA', constraints=cons, tol=1e-8, options={'disp': True})
-    
-    return result.x
-
 def bilevel_find_sol(environment,x_limits,y_limits,direction, intersection_threshold):#P,Xf,means2, covariances2,n_components):  
     if environment:
         cons = bilevel_constraints(Xf, x_limits, y_limits, direction)
     else:
         cons = ({'type': 'ineq', 'fun': lambda x:  pdf_first_reach(x) - intersection_threshold})
 
-    guess_ = guess(P,Xf,direction)
+    guess_ = guess(P,Xf)
     result = minimize(cost_fun_bilevel, guess_, method='COBYLA', constraints=cons, tol=1e-8, options={'disp': True})
     
     return result.x
@@ -407,12 +339,12 @@ covariances2 = np.array([[[0.00026569, 0.00025749],
 weights2 = np.array([0.5083096399095122, 0.49169036009048783])
 
 
-# P = [0.2,0.0]
-# Xf = [0.7,0.3]
-# x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-# y_limits = [-0.2, 0.2, 0.4]
-# table_direction = ['up','right']
-# environment = True
+P = [0.2,0.0]
+Xf = [0.7,0.3]
+x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
+y_limits = [-0.2, 0.2, 0.4]
+table_direction = ['up','right']
+environment = True
 
 # P = [0.3,-0.18]
 # Xf = [-0.0,0.3]
@@ -428,12 +360,12 @@ weights2 = np.array([0.5083096399095122, 0.49169036009048783])
 # table_direction = ['down','right']
 # environment = True
 
-P = [0.5,0.38]
-Xf = [0.0,0.0]
-x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-y_limits = [-0.2, 0.15, 0.4]
-table_direction = ['down','left']
-environment = True
+# P = [0.5,0.38]
+# Xf = [0.0,0.0]
+# x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
+# y_limits = [-0.2, 0.15, 0.4]
+# table_direction = ['down','left']
+# environment = True
 
 # P = [0.0,0.0]
 # Xf = [1.0,0.7]
