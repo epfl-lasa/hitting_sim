@@ -11,7 +11,7 @@ from iiwa_environment import physics as phys
 import functions as f
 
 
-hf = h5py.File('Data/data_pres.h5', 'w')
+hf = h5py.File('Data/data_no_table_2.h5', 'w')
 group = hf.create_group("my_data")
 
 
@@ -28,7 +28,7 @@ box = object.Box([0.2, 0.2, 0.2], 0.5)  # the box is a cube of size 20 cm, and i
 iiwa = sim_robot_env(1, box)
 
 ###################### INIT CONDITIONS #################################
-X_init = [0.3, -0.2, 0.5]
+X_init = [0.3, -0.2, 0.2]
 q_init = iiwa.get_IK_joint_position(X_init) # Currently I am not changing any weights here
 Lambda_init = iiwa.get_inertia_matrix_specific(q_init)
 

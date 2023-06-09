@@ -30,11 +30,13 @@ class sim_robot_env:
         '''
         boxOrientation = p.getQuaternionFromEuler([0, 0, theta1])
         self.box = p.loadURDF("descriptions/robot_descriptions/objects_description/objects/simple_box.urdf",
-                              [box_i[0], box_i[1], 0.0], boxOrientation, globalScaling=1.0, useFixedBase=0)
+                              [box_i[0], box_i[1], 0.15], boxOrientation, globalScaling=1.0, useFixedBase=0)
         # tableOrientation = p.getQuaternionFromEuler([0, 0, math.pi / 2])
         # self.table = p.loadURDF("descriptions/robot_descriptions/objects_description/objects/table.urdf",
         #                    [1.15, 1.0, 0.0], tableOrientation, globalScaling=1.0, useFixedBase=1)
         p.changeDynamics(self.box, -1, mass=box_object.mass, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
+                         spinningFriction=0.02, restitution=0, lateralFriction=0.3)
+        p.changeDynamics(plane, -1, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
                          spinningFriction=0.02, restitution=0, lateralFriction=0.3)
         # p.changeDynamics(self.table, 1, mass=10, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
         #                  spinningFriction=0.02, restitution=0, lateralFriction=0.3)
