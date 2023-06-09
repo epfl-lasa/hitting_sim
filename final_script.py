@@ -546,7 +546,7 @@ def simulation_parameters(X_opt, Xi, Xf, box1, box2):
 
 
 
-model_data_paths = ['Data/model_full.h5', 'Data/model_2d.h5']
+model_data_paths = ['Data/model_no_table_full.h5', 'Data/model_no_table_2d.h5']
 n_components_full, means_full, covariances_full, weights_full,\
             n_components_2d, means_2d, covariances_2d, weights_2d = read_model_data(model_data_paths)
 
