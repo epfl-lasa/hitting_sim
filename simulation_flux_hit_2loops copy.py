@@ -11,8 +11,8 @@ from iiwa_environment import physics as phys
 import functions as f
 
 
-hf = h5py.File('Data/data_no_table_3.h5', 'w')
-group = hf.create_group("my_data")
+# hf = h5py.File('Data/data_no_table_3.h5', 'w')
+# group = hf.create_group("my_data")
 
 
 # params_ds = group.create_dataset(f"params_{X_ref}", shape=(0, 4), maxshape=(None, 4), dtype=np.float64)
@@ -50,8 +50,8 @@ p_des_grid = np.linspace(0.7,1,4)
 
 ########################################################################
 
-params_dataset = group.create_dataset("params", (len(X_ref_grid)*len(p_des_grid), 4), dtype='f')
-box_pos_dataset = group.create_dataset("box_pos", (len(X_ref_grid)*len(p_des_grid), 3), dtype='f')
+# params_dataset = group.create_dataset("params", (len(X_ref_grid)*len(p_des_grid), 4), dtype='f')
+# box_pos_dataset = group.create_dataset("box_pos", (len(X_ref_grid)*len(p_des_grid), 3), dtype='f')
 
 i = 0
 
@@ -83,6 +83,10 @@ for p_des in p_des_grid:
             else:
                 dX = linear_ds(A, X_qp, X_ref)
 
+
+            #print("dX",dX)
+            dX = np.array([0.0,0.4,0.0])
+
             hit_dir = dX / np.linalg.norm(dX)
 
             lambda_current = iiwa.get_inertia_matrix()
@@ -105,10 +109,10 @@ for p_des in p_des_grid:
             time_now = time.time()
 
             if((is_hit and iiwa.get_box_speed() < 0.001 and time_now - time_init > contactTime)):# or (time_now - time_init > 10)):
-                box_pos = np.array(iiwa.get_box_position_orientation()[0])
-                # # Append the data to the datasets
-                params_dataset[i:i+1] = params.reshape(1, 4)
-                box_pos_dataset[i:i+1] = box_pos.reshape(1, 3)
+                # box_pos = np.array(iiwa.get_box_position_orientation()[0])
+                # # # Append the data to the datasets
+                # params_dataset[i:i+1] = params.reshape(1, 4)
+                # box_pos_dataset[i:i+1] = box_pos.reshape(1, 3)
                 i = i + 1
                 
                 # params_ds.resize((params_ds.shape[0] + 1, 4))
@@ -117,4 +121,4 @@ for p_des in p_des_grid:
                 # box_pos_ds.resize((box_pos_ds.shape[0] + 1, 3))
                 # box_pos_ds[-1] = box_pos
                 break
-hf.close()
+# hf.close()

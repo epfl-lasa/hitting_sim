@@ -9,6 +9,7 @@ from scipy.stats import multivariate_normal
 from scipy.stats import chi2
 from scipy.optimize import minimize, basinhopping, Bounds
 from scipy.integrate import nquad
+import matplotlib.patches as patches
 
 from gmr import GMM
 
@@ -111,36 +112,14 @@ def fun(x, Xi, Xf, box1, box2, n_components1, means1, covariances1, weights1,\
         return -f*integral_intersection_area(x, Xi, Xf, box1, box2, n_components1, means1, covariances1, weights1,\
                                 n_components2, means2, covariances2, weights2) #- 0.00*(integral_intersection_area(x) - intersection_threshold)
     elif optimization_type == 'Golf':
-        return -f- 0.2*(integral_intersection_area(x, Xi, Xf, box1, box2, n_components1, means1, covariances1, weights1,\
+        return -1.5*f- 0.1*(integral_intersection_area(x, Xi, Xf, box1, box2, n_components1, means1, covariances1, weights1,\
                                 n_components2, means2, covariances2, weights2)-0.2)
-    
-def fun2(x, Xi, Xf, box1, box2, n_components1, means1, covariances1, weights1,\
-                               n_components2, means2, covariances2, weights2, optimization_type):
-    f = 0
-    R2 = np.array([[np.cos(x[2]), -np.sin(x[2])],
-                [np.sin(x[2]), np.cos(x[2])]])
-    for i in range(n_components1):
-        R2 = np.squeeze(R2)
-        mean = means2[i] + (x[:2]-box2)
-        new_mean = R2 @ (mean-x[:2]) + x[:2]
-        new_covariance = R2 @ covariances2[i] @ R2.T
-
-        det_cov = np.linalg.det(new_covariance)
-
-        pdf = weights2[i]*(2 * np.pi * np.sqrt(det_cov))* multivariate_normal.pdf(Xf, mean=new_mean, cov=new_covariance)
-
-        f = f + pdf
-
-    if optimization_type == 'Full':
-        return -f
-    elif optimization_type == 'Golf':
-        return -f
 
 def constraints(Xi, Xf, x_limits, y_limits, direction, margin):
     cons = []
 
     # Box always on Table
-    def cons_1(x, alpha, Xf, x_limits, y_limits, direction, margin):
+    def cons_1(x, alpha, Xf, x_limits, direction, margin):
         if direction[1] == 'right':
             return ((1 - alpha) * x[0] + alpha * Xf[0]) - (x_limits[0] + margin)
         else:
@@ -162,7 +141,7 @@ def constraints(Xi, Xf, x_limits, y_limits, direction, margin):
         else:
             -((1 - alpha) * x[0] + alpha * Xf[0])+(x_limits[2]-margin)
 
-    def cons_3(x, alpha, Xf, x_limits, y_limits, direction, margin):
+    def cons_3(x, alpha, Xf, y_limits, direction, margin):
         if direction[0] == 'up':
             return -((1 - alpha) * x[1] + alpha * Xf[1])+(y_limits[2]-margin)
         else:
@@ -186,14 +165,14 @@ def constraints(Xi, Xf, x_limits, y_limits, direction, margin):
         
 
     for a in np.linspace(0.0,1.0,num=30):
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_1(x, a, Xf, x_limits, y_limits, direction, margin)})
+        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_1(x, a, Xf, x_limits, direction, margin)})
         cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_2(x, a, Xf, x_limits, y_limits, direction, margin)})
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_3(x, a, Xf, x_limits, y_limits, direction, margin)})
+        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_3(x, a, Xf, y_limits, direction, margin)})
         cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_4(x, a, Xf, x_limits, y_limits, direction, margin)})
 
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_1(x, a, Xi, x_limits, y_limits, direction, margin)})
+        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_1(x, a, Xi, x_limits, direction, margin)})
         cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_2(x, a, Xi, x_limits, y_limits, direction, margin)})
-        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_3(x, a, Xi, x_limits, y_limits, direction, margin)})
+        cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_3(x, a, Xi, y_limits, direction, margin)})
         cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_4(x, a, Xi, x_limits, y_limits, direction, margin)})
 
     return cons
@@ -202,13 +181,13 @@ def guess(Xi,Xf, table_direction):
     guess = [0,0,0,0]
 
     if table_direction[0] == 'up' and table_direction[1] == 'right':
-        guess[0] = 0.8#(Xi[0]+Xf[0])/2
-        guess[1] = 0.6#(Xi[1]+Xf[1])/2
+        guess[0] = (Xi[0]+Xf[0])/2
+        guess[1] = (Xi[1]+Xf[1])/2
         guess[2] = np.arctan2(Xf[1]-guess[1],Xf[0]-guess[0])-np.pi/2
         guess[3] = np.arctan2(guess[1]-Xi[1],guess[0]-Xi[0]) -np.pi/2
     elif table_direction[0] == 'up' and table_direction[1] == 'left':
-        guess[0] = 0.6#(Xi[0]+Xf[0])/2
-        guess[1] = 0.6#(Xi[1]+Xf[1])/2
+        guess[0] = (Xi[0]+Xf[0])/2
+        guess[1] = (Xi[1]+Xf[1])/2
         guess[2] = np.arctan2(guess[0]-Xf[0],Xf[1]-guess[1])#+np.pi/2
         guess[3] = np.arctan2(Xi[0]-guess[0],guess[1]-Xi[1]) #+np.pi/2
     elif table_direction[0] == 'down' and table_direction[1] == 'left':
@@ -226,54 +205,13 @@ def guess(Xi,Xf, table_direction):
 
 def plot_optimization(X_opt, environment, x_limits, y_limits, table_direction, colormap,\
                        Xi, Xf, box1, box2, n_components1, means1, covariances1, weights1,\
-                               n_components2, means2, covariances2, weights2, optimization_type):
+                               n_components2, means2, covariances2, weights2, optimization_type, box_robot_dist):
     
     fig, ax = plt.subplots()
 
     if colormap:
-        if table_direction[0] == 'up' and table_direction[1] == 'right':
-            x1 = x_limits[0]
-            x2 = x_limits[1]
-            y1 = y_limits[0]
-            y2 = y_limits[1]
-
-            x3 = x_limits[0]
-            x4 = x_limits[2]
-            y3 = y_limits[1]
-            y4 = y_limits[2]
-        elif table_direction[0] == 'down' and table_direction[1] == 'right':
-            x1 = x_limits[0]
-            x2 = x_limits[1]
-            y1 = y_limits[0]
-            y2 = y_limits[2]
-
-            x3 = x_limits[1]
-            x4 = x_limits[2]
-            y3 = y_limits[0]
-            y4 = y_limits[1]
-        elif table_direction[0] == 'up' and table_direction[1] == 'left':
-            x1 = x_limits[0]
-            x2 = x_limits[2]
-            y1 = y_limits[1]
-            y2 = y_limits[2]
-
-            x3 = x_limits[1]
-            x4 = x_limits[2]
-            y3 = y_limits[0]
-            y4 = y_limits[1]
-        elif table_direction[0] == 'down' and table_direction[1] == 'left':
-            x1 = x_limits[0]
-            x2 = x_limits[2]
-            y1 = y_limits[0]
-            y2 = y_limits[1]
-
-            x3 = x_limits[1]
-            x4 = x_limits[2]
-            y3 = y_limits[1]
-            y4 = y_limits[2]
-
-        x0_range = np.linspace(x1, x2, 100)
-        x1_range = np.linspace(y1, y2, 100)
+        x0_range = np.linspace(x_limits[0], x_limits[1], 100)
+        x1_range = np.linspace(y_limits[0], y_limits[1], 100)
 
         pdf_values = np.zeros((len(x0_range), len(x1_range)))
         for i, x0_val in enumerate(x0_range):
@@ -282,12 +220,12 @@ def plot_optimization(X_opt, environment, x_limits, y_limits, table_direction, c
                 pdf_values[j, i] = -fun(X_opt, Xi, X1, box1, box2, n_components1, means1, covariances1, weights1,\
                                n_components2, means2, covariances2, weights2, 'Full')
 
-        plt.imshow(pdf_values, extent=[x1, x2, y1, y2], origin='lower', cmap='Wistia', vmin=0.0, vmax=0.3)
+        plt.imshow(pdf_values, extent=[x_limits[0], x_limits[1], y_limits[0], y_limits[1]], origin='lower', cmap='viridis')
         
         x0_range=[]
         x1_range=[]
-        x0_range = np.linspace(x3, x4, 100)
-        x1_range = np.linspace(y3, y4, 100)
+        x0_range = np.linspace(x_limits[0], x_limits[2], 100)
+        x1_range = np.linspace(y_limits[1], y_limits[2], 100)
 
         pdf_values1 = np.zeros((len(x0_range), len(x1_range)))
         for i, x0_val in enumerate(x0_range):
@@ -296,7 +234,7 @@ def plot_optimization(X_opt, environment, x_limits, y_limits, table_direction, c
                 pdf_values1[j, i] = -fun(X_opt, Xi, X1, box1, box2, n_components1, means1, covariances1, weights1,\
                                n_components2, means2, covariances2, weights2, 'Full')
 
-        plt.imshow(pdf_values1, extent=[x3, x4, y3, y4], origin='lower', cmap='Wistia', vmin=0.0, vmax=0.3)
+        plt.imshow(pdf_values1, extent=[x_limits[0], x_limits[2], y_limits[1], y_limits[2]], origin='lower', cmap='viridis')
                 
         # Add colorbar legend
         colorbar = plt.colorbar()
@@ -304,6 +242,35 @@ def plot_optimization(X_opt, environment, x_limits, y_limits, table_direction, c
     # Plot initial position of box
     ax.scatter(Xi[0],Xi[1], s=100, marker='+',color='g', label ='Xi')
     ax.scatter(X_opt[0],X_opt[1], s=100, marker='+',color='b', label ='Xm')
+    ax.scatter(Xf[0],Xf[1], s=100, marker='+',color='k', label ='Xf')
+
+    ax.scatter(0.0,0.0, s=100, marker='o',color='orange', label ='Xr0')
+    ax.scatter(X_opt[0] - Xi[0],X_opt[1] - Xi[1], s=100, marker='o',color='purple', label ='Xrtemp')
+
+    arrow_props = dict(arrowstyle='->', linewidth=2, color='black')
+    ax.annotate('', xy=(X_opt[0] - Xi[0], X_opt[1] - Xi[1]), xytext=(0.0, 0.0),
+                arrowprops=arrow_props)
+    
+    ax.plot([0.0,Xi[0]],[0.0,Xi[1]],color='k', linestyle='dashed',linewidth=0.5)
+    ax.plot([X_opt[0] - Xi[0],X_opt[0]],[X_opt[1] - Xi[1],X_opt[1]],color='k', linestyle='dashed',linewidth=0.5)
+
+    center = Xi
+    radius =  box_robot_dist
+    theta1 = 120
+    theta2 = 210  # Adjust the start and end angles of the arc
+    arrow_props = dict(arrowstyle='->', linewidth=2, color='black')
+
+    arc = patches.Arc(X_opt[:2], radius*2, radius*2, 0, theta1, theta2, linewidth=2)
+    ax.add_patch(arc)
+
+
+    xxx = [0.0,0.0]
+    xxx[0] = X_opt[0] - Xi[0]
+    xxx[1] = X_opt[1] - Xi[1]
+    Xr1 = rot_pts(xxx, X_opt[:2], X_opt[2])
+    ax.plot([Xr1[0],X_opt[0]],[Xr1[1],X_opt[1]],color='k', linestyle='dashed',linewidth=0.5)
+
+    ax.scatter(Xr1[0],Xr1[1], s=100, marker='o',color='r', label ='Xr2')
 
     ax.plot([Xi[0],X_opt[0]],[Xi[1],X_opt[1]],color='k', linestyle='dashed')
     ax.plot([X_opt[0],Xf[0]],[X_opt[1],Xf[1]],color='k', linestyle='dashed')
@@ -369,16 +336,15 @@ def plot_optimization(X_opt, environment, x_limits, y_limits, table_direction, c
         new_covariances2.append(new_covariance2)
 
 
-        ellipse.plot_ellipse(new_mean1,new_covariance1,ax)
-        ellipse.plot_ellipse(new_mean2,new_covariance2,ax)
+        #ellipse.plot_ellipse(new_mean1,new_covariance1,ax)
+        #ellipse.plot_ellipse(new_mean2,new_covariance2,ax)
 
-    ax.scatter(Xf[0],Xf[1], s=100, marker='+',color='k', label ='Xf')
 
 
     plt.xlabel('X-axis')
     plt.ylabel('Y-axis')
 
-    plt.title(f'{optimization_type} Optimization')
+    plt.title(f'Positioning of robot 2')
 
 
     ax.legend()
@@ -389,10 +355,8 @@ def output_results(X_opt,Xi, Xf, box1, box2, n_components1, means1, covariances1
     print("theta_1 = ", np.rad2deg(X_opt[3]))
     print("Xm = ", X_opt[:2])
     print("theta_2 = ", np.rad2deg(X_opt[2]))
-    print("probability to reach Xm given Xi = ", integral_intersection_area(X_opt,Xi, Xf, box1, box2, n_components1, means1, covariances1, weights1,\
+    print("intersection = ", integral_intersection_area(X_opt,Xi, Xf, box1, box2, n_components1, means1, covariances1, weights1,\
                                n_components2, means2, covariances2, weights2))
-    print("probability to reach Xf given Xm = ", fun2(X_opt, Xi, Xf, box1, box2, n_components1, means1, covariances1, weights1,\
-                               n_components2, means2, covariances2, weights2, optimization_type))
     print("objective function = ", fun(X_opt, Xi, Xf, box1, box2, n_components1, means1, covariances1, weights1,\
                                n_components2, means2, covariances2, weights2, optimization_type))
 
@@ -441,7 +405,7 @@ def regress(n_components, means_, covariances_, weights_, known_parameters, to_p
         
         return h_dir, p_des, X_ref
 
-def simulate(X_i_robot, theta_i_robot, X_m_robot, theta_m_robot, h_dir1, p_des1, X_ref1, box_i, h_dir2, p_des2, X_ref2, X_init1, X_init2,table_direction,x_limits,y_limits,X_opt,Xf):
+def simulate(X_i_robot, theta_i_robot, X_m_robot, theta_m_robot, h_dir1, p_des1, X_ref1, box_i, h_dir2, p_des2, X_ref2):
     trailDuration = 0 # Make it 0 if you don't want the trail to end
     contactTime = 0.5 # This is the time that the robot will be in contact with the box
 
@@ -451,20 +415,12 @@ def simulate(X_i_robot, theta_i_robot, X_m_robot, theta_m_robot, h_dir1, p_des1,
 
     ################## GET THE ROBOT + ENVIRONMENT #########################
     box = object.Box([0.2, 0.2, 0.2], 0.5)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
-    iiwa = sim_robot_env(1, box, startPos1, 0, startPos2, 0, box_i,table_direction,x_limits,y_limits,X_opt,Xf)
+    iiwa = sim_robot_env(1, box, startPos1, theta_i_robot, startPos2, theta_m_robot, box_i)
 
     ###################### INIT CONDITIONS #################################
-
-    X_init1_all = [X_init1[0],X_init1[1],0.2]
-    X_init2_all = [X_init2[0],X_init2[1],0.2]
-    print("X_init1_all",X_init1_all)  #X_init1 [0.49079644 0.00378042]
-
-    q_init1 = iiwa.get_IK_joint_position(X_init1_all) # Currently I am not changing any weights here
-    q_init2 = iiwa.get_IK_joint_position2(X_init2_all) # Currently I am not changing any weights here
-
-
-    Lambda_init = iiwa.get_inertia_matrix_specific(q_init1)
-    Lambda_init2 = iiwa.get_inertia_matrix_specific(q_init2)
+    X_init = [0.3, -0.2, 0.5]
+    q_init = iiwa.get_IK_joint_position(X_init) # Currently I am not changing any weights here
+    Lambda_init = iiwa.get_inertia_matrix_specific(q_init)
 
     box_position_orientation = iiwa.get_box_position_orientation()
     box_position_init = box_position_orientation[0]
@@ -473,36 +429,32 @@ def simulate(X_i_robot, theta_i_robot, X_m_robot, theta_m_robot, h_dir1, p_des1,
     A = np.array([[-2, 0, 0], [0, -2, 0], [0, 0, -2]])
 
     # initialize the robot and the box
-    iiwa.set_to_joint_position(q_init1)
-    iiwa.set_to_joint_position2(q_init2)
-    
+    iiwa.set_to_joint_position(q_init)
+    iiwa.set_to_joint_position2(q_init)
     iiwa.reset_box(box_position_init, box_orientation_init)
     lambda_dir = h_dir1.T @ Lambda_init @ h_dir1
-    lambda_dir2 = h_dir2.T @ Lambda_init2 @ h_dir2
+    lambda_dir2 = h_dir2.T @ Lambda_init @ h_dir2
 
     is_hit1 = False
 
     # take some time
-    time.sleep(30)    # !!!!
+    time.sleep(1)    # !!!!
 
     # initialise the time
     time_init = time.time()
-    
+
 
     is_hit2 = False
     # Start the motion
     while 1:
-        # print(np.array(iiwa.get_box_position_orientation()[0]))
+        print(np.array(iiwa.get_box_position_orientation()[0]))
 
         X_qp = np.array(iiwa.get_ee_position())
         
         if not is_hit1:
             dX = linear_hitting_ds_pre_impact(A, X_qp, X_ref1, h_dir1, p_des1, lambda_dir, box.mass)
-            # dX = linear_hitting_ds_pre_impact(A, X_qp, X_ref1, h_dir1, 0.7, lambda_dir, box.mass)
         else:
             dX = linear_ds(A, X_qp, X_ref1)
-        
-        # print("dX", dX)
 
         hit_dir = dX / np.linalg.norm(dX)
 
@@ -531,26 +483,24 @@ def simulate(X_i_robot, theta_i_robot, X_m_robot, theta_m_robot, h_dir1, p_des1,
         #if (iiwa.get_box_position_orientation()[0][1]>0.5):
             #x_b = np.array(iiwa.get_box_position_orientation()[0]) + np.array([0,0.2,0])
             while 1:
-                #print(np.array(iiwa.get_box_position_orientation()[0]))
+                print(np.array(iiwa.get_box_position_orientation()[0]))
                 X_qp2 = np.array(iiwa.get_ee_position2())  #########
                 
                 x_b = np.array(iiwa.get_box_position_orientation()[0])
                 
                 if not is_hit2:
-                    dX = linear_hitting_ds_pre_impact(A, X_qp2, X_ref2, h_dir2, p_des2, lambda_dir2, box.mass)
-                    # dX = linear_hitting_ds_pre_impact(A, X_qp2, X_ref2, h_dir2, 1.1, lambda_dir2, box.mass)
+                    dX = linear_hitting_ds_pre_impact(A, X_qp2, X_ref2, h_dir2, 1.0, lambda_dir2, box.mass)
                 else:
                     dX = linear_ds(A, X_qp2, X_ref2)
     
-                hit_dir2 = dX / np.linalg.norm(dX)
-                # hit_dir2 = np.array([-1,0,0])
+                hit_dir = dX / np.linalg.norm(dX)
     
                 lambda_current = iiwa.get_inertia_matrix2()
-                lambda_dir2 = hit_dir2.T @ lambda_current @ hit_dir2
+                lambda_dir2 = hit_dir.T @ lambda_current @ hit_dir
                 
                 jac = np.array(iiwa.get_trans_jacobian2())
-                q_dot = get_joint_velocities_qp_dir_inertia_specific_NS2(dX, jac, iiwa, hit_dir2, 0.15, lambda_dir2)
-
+                q_dot = get_joint_velocities_qp_dir_inertia_specific_NS2(dX, jac, iiwa, hit_dir, 0.15, lambda_dir2)
+                
                 iiwa.move_with_joint_velocities2(q_dot)
                 
                 ## Need something more here later, this is contact detection and getting the contact point
@@ -599,27 +549,6 @@ def simulation_parameters(X_opt, Xi, Xf, box1, box2):
     X_m_robot = rot_pts(X_m_robot0, X_m, theta_m_robot)
 
 
-    
-    X_init = [0.3, -0.2, 0.2]
-    box_ee_dist = np.sqrt((X_init[0]-box1[0])**2 + (X_init[1]-box1[1])**2)
-    box_ee_angle = np.arctan2(box1[1]-X_init[1],X_init[0]-box1[0])
-
-    # ee position calculated from Xi
-    X_init10 = Xi - box_ee_dist*np.array([-np.cos(box_ee_angle),np.sin(box_ee_angle)])
-    # print("Xee",X_init10)
-    # ee position rotated
-    X_init1 = rot_pts(X_init10, Xi, theta_i_robot)
-    print("X_init1",X_init1)
-
-    # ee 2 position calculated from Xm
-    X_init20 = X_m - box_ee_dist*np.array([-np.cos(box_ee_angle),np.sin(box_ee_angle)])
-    # ee 2 position rotated
-    X_init2 = rot_pts(X_init20, X_m, theta_m_robot)
-
-
-
-
-
     # COLLECT DATA WITHOUT TABLE !!!!!
 
     # Bring Xm and Xf to reference of reachable space (to regress)
@@ -632,14 +561,10 @@ def simulation_parameters(X_opt, Xi, Xf, box1, box2):
     z_reg = 0.44922494
     known_parameters = [[x_reg, y_reg, z_reg]]  
     h_dir1, p_des1, X_ref1 = regress(n_components_full, means_full, covariances_full, weights_full, known_parameters)
-    
-    X_ref1[:2] = X_ref1[:2] + (Xi - box1)
-    
     # Rotate back hitting point to real scenario
     X_ref_rot1 = rot_pts(np.array(X_ref1[:2]), Xi, theta_i_robot)
     X_ref1[:2] = X_ref_rot1
-
-    X_ref1[2] = X_ref1[2]-0.4   # to be on the floor (HAVE TO CHANGE)
+    X_ref1[2] = X_ref1[2]#-0.4   # to be on the floor (HAVE TO CHANGE)
     # Rotate back hitting direction to real scenario
     h_dir_rot1 = []
     h_dir_rot1_ = rot_pts(np.array(h_dir1[:2]), 0, theta_i_robot)
@@ -653,13 +578,10 @@ def simulation_parameters(X_opt, Xi, Xf, box1, box2):
     z_reg = 0.44922494
     known_parameters = [[x_reg, y_reg, z_reg]]  
     h_dir2, p_des2, X_ref2 = regress(n_components_full, means_full, covariances_full, weights_full, known_parameters)
-    
-    X_ref2[:2] = X_ref2[:2] + (X_m - box2)
-    
     # Rotate back hitting point to real scenario
     X_ref_rot2 = rot_pts(np.array(X_ref2[:2]), X_m, theta_m_robot)
     X_ref2[:2] = X_ref_rot2
-    X_ref2[2] = X_ref2[2]-0.4    # to be on the floor (HAVE TO CHANGE)
+    X_ref2[2] = X_ref2[2]#-0.4    # to be on the floor (HAVE TO CHANGE)
     # Rotate back hitting direction to real scenario
     h_dir_rot2 = []
     h_dir_rot2_ = rot_pts(np.array(h_dir2[:2]), 0, theta_m_robot)
@@ -667,13 +589,9 @@ def simulation_parameters(X_opt, Xi, Xf, box1, box2):
     h_dir_rot2[:2] = h_dir_rot2_
     h_dir_rot2 = np.array(h_dir_rot2)
 
-    return X_i_robot, theta_i_robot, X_m_robot, theta_m_robot, h_dir_rot1, p_des1, X_ref1, h_dir_rot2, p_des2, X_ref2, X_init1, X_init2
+    return X_i_robot, theta_i_robot, X_m_robot, theta_m_robot, h_dir_rot1, p_des1, X_ref1, h_dir_rot2, p_des2, X_ref2, box_robot_dist
 
 
-
-environment = True
-intersection_threshold = 0.6
-margin = 0.05
 
 
 # Environment
@@ -681,75 +599,19 @@ box1 = np.array([0.5,0.3])
 box2 = np.array([0.5,0.3])
 
 
-# Xi = np.array([0.5,0.3])
-# Xf = [1.2,0.6]
-# x_limits = [0.25, 0.6, 1.4]
-# y_limits = [0.1, 0.5, 0.7]
-# table_direction = ['up','right']
+Xi = np.array([0.5,0.3])
+Xf = [1.2,0.6]
+x_limits = [0.25, 0.6, 1.4]
+y_limits = [0.1, 0.5, 0.7]
+table_direction = ['up','right']
+environment = True
+colormap = False
+intersection_threshold = 0.6
+margin = 0.05
 
 
-# Xi = np.array([0.7,0.5])
-# Xf = [1.4,0.8]
-# x_limits = [0.45, 0.8, 1.6]
-# y_limits = [0.3, 0.7, 0.9]
-# table_direction = ['up','right']
+optimization_type = 'Full' 
 
-
-# Xi = [0.05,0.38]
-# Xf = [0.7,0.0]
-# x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-# y_limits = [-0.2, 0.2, 0.4]
-# table_direction = ['down','right']
-
-# Xi = [0.4,0.3]
-# Xf = [0.0,0.0]
-# x_limits = [-0.25, 0.3, 0.9]  #[-0.25, 0.5]
-# y_limits = [-0.2, 0.1, 0.4]
-# table_direction = ['down','left']
-
-# Xi = [0.8,0.2]
-# Xf = [0.3,0.7]
-# x_limits = [0.05, 0.65, 1.2]  #[-0.25, 0.5]
-# y_limits = [0.1, 0.5, 0.9]
-# table_direction = ['up','left']
-
-# Xi = [0.9,0.2]
-# Xf = [0.3,0.7]
-# x_limits = [0.05, 0.65, 1.2]  #[-0.25, 0.5]
-# y_limits = [0.1, 0.5, 0.9]
-# table_direction = ['up','left']
-
-# Xi = np.array([0.5,0.3])
-# Xf = [0.9,0.64]
-# x_limits = [0.25, 0.6, 1.4]
-# y_limits = [0.1, 0.5, 0.7]
-# table_direction = ['up','right']
-
-# Xi = np.array([0.45,0.3])
-# Xf = [-0.2,0.6]
-# x_limits = [-0.4, 0.3, 0.8] 
-# y_limits = [0.1, 0.5, 0.9]
-# table_direction = ['up','left']
-
-Xi = np.array([0.45,0.3])
-Xf = [0.0,0.7]
-x_limits = [-0.4, 0.3, 0.8] 
-y_limits = [0.1, 0.5, 0.9]
-table_direction = ['up','left']
-
-# Xi = np.array([0.3,0.4])
-# Xf = [1.2,0.6]
-# x_limits = [0.25, 0.6, 1.4]
-# y_limits = [0.1, 0.5, 0.7]
-# table_direction = ['up','right']
-
-
-colormap = True
-optimization_type = 'Golf' 
-
-
-model_data_paths = ['Data/model_pres_full.h5', 'Data/moddd_2d.h5']
-# model_data_paths = ['Data/model_full_20.h5', 'Data/model_2d_20.h5']
 
 model_data_paths = ['Data/model_no_table_full_pres.h5', 'Data/model_no_table_2d_pres.h5']
 
@@ -763,16 +625,19 @@ X_opt = find_sol(environment,x_limits,y_limits,table_direction, intersection_thr
 output_results(X_opt, Xi, Xf, box1, box2, n_components_2d, means_2d, covariances_2d, weights_2d,\
                n_components_2d, means_2d, covariances_2d, weights_2d, optimization_type)
 
-plot_optimization(X_opt, environment, x_limits, y_limits, table_direction, colormap,\
-                       Xi, Xf, box1, box2, n_components_2d, means_2d, covariances_2d, weights_2d,\
-                         n_components_2d, means_2d, covariances_2d, weights_2d, optimization_type)
+
 
 X_i_robot, theta_i_robot, X_m_robot,theta_m_robot,\
-      h_dir_rot1, p_des1, X_ref1, h_dir_rot2, p_des2, X_ref2, X_init1, X_init2 = simulation_parameters(X_opt, Xi, Xf, box1, box2)
+      h_dir_rot1, p_des1, X_ref1, h_dir_rot2, p_des2, X_ref2, box_robot_dist= simulation_parameters(X_opt, Xi, Xf, box1, box2)
 
-print(X_ref1,X_ref2)
+plot_optimization(X_opt, environment, x_limits, y_limits, table_direction, colormap,\
+                       Xi, Xf, box1, box2, n_components_2d, means_2d, covariances_2d, weights_2d,\
+                         n_components_2d, means_2d, covariances_2d, weights_2d, optimization_type, box_robot_dist)
+# simulate(X_i_robot, theta_i_robot, X_m_robot, theta_m_robot, h_dir_rot1, p_des1, X_ref1, Xi, h_dir_rot2, p_des2, X_ref2)
 
-simulate(X_i_robot, theta_i_robot, X_m_robot, theta_m_robot, h_dir_rot1, p_des1, X_ref1, Xi, h_dir_rot2, p_des2, X_ref2, X_init1, X_init2,table_direction,x_limits,y_limits,X_opt,Xf)
+
+
+
 
 
 

@@ -198,7 +198,7 @@ n_components = grid_search.best_estimator_.n_components
 
 # Define specific point
 point = [0.3, 0.8]
-p2 = [0.5, 1.1]
+p2 = [0.5, 0.95]
 
 inn = 0
 in2 = 0
@@ -229,6 +229,10 @@ print("covariances", covariances)
 print("weights", weights)
 
 
+ax.scatter(point[0],point[1], s=100, marker='+', label ='Point outside the reachable space')
+ax.scatter(p2[0],p2[1], s=100, color = 'k', marker='+', label ='Point inside the reachable space')
+
+
 if inn:
     print("Point is inside the reachable space")
 else:
@@ -254,7 +258,7 @@ for gaussian in gaussians:
 
 # Check for best angle theta to reach point Xm
 Xm = [0.0,0.1]
-ax.scatter(Xm[0],Xm[1], s=100, marker='+',color='b', label ='Target final position')
+# ax.scatter(Xm[0],Xm[1], s=100, marker='+',color='b', label ='Target final position')
 
 
 max_prob = 0
@@ -319,16 +323,16 @@ RR = R[:2,:2]
 
 
 new_gaussians = []
-for i in range(n_components):
-    mean = np.ones(3)
-    mean[:2] = means[i]
+# for i in range(n_components):
+#     mean = np.ones(3)
+#     mean[:2] = means[i]
     
-    new_mean = Transf @ mean
-    new_mean = new_mean[:2]
+#     new_mean = Transf @ mean
+#     new_mean = new_mean[:2]
 
-    covariance =  covariances[i]
-    new_covariance = RR @ covariance @ RR.T
-    ellipse.plot_ellipse(new_mean,new_covariance,ax)
+#     covariance =  covariances[i]
+#     new_covariance = RR @ covariance @ RR.T
+#     ellipse.plot_ellipse(new_mean,new_covariance,ax)
 
 
 print(max_theta)

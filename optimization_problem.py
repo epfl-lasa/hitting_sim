@@ -84,7 +84,7 @@ def fun(x):
     # return -f*integral_intersection_area(x) - 0.001*(integral_intersection_area(x) - intersection_threshold)
     # print(f)
     print(integral_intersection_area(x), -f*integral_intersection_area(x))
-    return -f*integral_intersection_area(x) - 0.00*(integral_intersection_area(x) - intersection_threshold)
+    return -f*integral_intersection_area(x)# - 0.00*(integral_intersection_area(x) - intersection_threshold)
 
     # return -f#- 0.2*(integral_intersection_area(x)-0.5)
 
@@ -451,6 +451,15 @@ y_limits = [-0.2, 0.2, 0.6]
 table_direction = ['up','left']
 environment = True
 
+
+# P = np.array([0.5,0.3])
+# Xf = [1.2,0.6]
+# x_limits = [0.25, 0.6, 1.4]
+# y_limits = [0.1, 0.5, 0.7]
+# table_direction = ['up','right']
+# environment = True
+# colormap = False
+
 # P = [0.05,0.38]
 # Xf = [0.7,0.0]
 # x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
@@ -486,8 +495,8 @@ environment = True
 # table_direction = ['up','right']
 # environment = True
 
-colormap = True
-colormap1 = True
+colormap = False
+colormap1 = False
 intersection_threshold = 0.6
 
 X_opt = find_sol(environment, x_limits, y_limits, table_direction, intersection_threshold)

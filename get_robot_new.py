@@ -5,9 +5,11 @@ import math
 from functions import get_stein_divergence
 
 class sim_robot_env:
-    def __init__(self, use_sim, box_object,startPos1, theta1, startPos2, theta2, box_i):
+    def __init__(self, use_sim, box_object,startPos1, theta1, startPos2, theta2, box_i,table_direction,x_limits,y_limits,X_opt,Xf):
 
         self.physicsClient = p.connect(p.GUI) #DIRECT for no interface - GUI for interface
+
+        
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.resetSimulation()
         plane = p.loadURDF("plane_transparent.urdf")
@@ -19,6 +21,19 @@ class sim_robot_env:
         p.setGravity(0, 0, -9.81)
         p.setTimeStep(0.001)
         p.setRealTimeSimulation(use_sim)
+
+
+        # # Set up the camera for a top view
+        # camera_distance = 1  # Distance from the camera to the origin
+        # camera_yaw = 0  # Yaw angle (rotation around the z-axis)
+        # camera_pitch = -90  # Pitch angle (rotation around the x-axis)
+        # camera_target_position = [0, 0, 3]  # Position where the camera is looking at
+
+        # # Set the camera position and orientation
+        # p.resetDebugVisualizerCamera(camera_distance, camera_yaw, camera_pitch, camera_target_position)
+
+
+
         p.resetDebugVisualizerCamera(cameraDistance=1.60, cameraYaw=200, cameraPitch=-25.00,
                                             cameraTargetPosition=[0, 0, 0])
 
@@ -40,6 +55,139 @@ class sim_robot_env:
                          spinningFriction=0.02, restitution=0, lateralFriction=0.3)
         # p.changeDynamics(self.table, 1, mass=10, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
         #                  spinningFriction=0.02, restitution=0, lateralFriction=0.3)
+
+
+        # Draw a "+" symbol on the floor
+        cross_size = 0.08  # Adjust the size of the cross as needed
+        cross_color = [0, 0, 1]  # Blue color
+        # Draw vertical line
+        vertical_line_start = [X_opt[0], X_opt[1] - cross_size, 0]
+        vertical_line_end = [X_opt[0], X_opt[1] + cross_size, 0]
+        p.addUserDebugLine(vertical_line_start, vertical_line_end, cross_color, lineWidth=5)
+        # Draw horizontal line
+        horizontal_line_start = [X_opt[0] - cross_size, X_opt[1], 0]
+        horizontal_line_end = [X_opt[0] + cross_size, X_opt[1], 0]
+        p.addUserDebugLine(horizontal_line_start, horizontal_line_end, cross_color, lineWidth=5)
+
+        # Draw a "+" symbol on the floor
+        cross_size = 0.08  # Adjust the size of the cross as needed
+        cross_color = [0, 0, 0]  # Black color
+        # Draw vertical line
+        vertical_line_start = [Xf[0], Xf[1] - cross_size, 0]
+        vertical_line_end = [Xf[0], Xf[1] + cross_size, 0]
+        p.addUserDebugLine(vertical_line_start, vertical_line_end, cross_color, lineWidth=5)
+        # Draw horizontal line
+        horizontal_line_start = [Xf[0] - cross_size, Xf[1], 0]
+        horizontal_line_end = [Xf[0] + cross_size, Xf[1], 0]
+        p.addUserDebugLine(horizontal_line_start, horizontal_line_end, cross_color, lineWidth=5)
+
+
+        if table_direction[0] == 'up' and table_direction[1] == 'right':
+            line_color = [1, 1, 1]  # White color
+            # Draw a line on the floor
+            line_start = [x_limits[0], y_limits[0], 0]
+            line_end = [x_limits[0], y_limits[2], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)        
+            # Draw a line on the floor
+            line_start = [x_limits[1], y_limits[0], 0]
+            line_end = [x_limits[1], y_limits[1], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)        
+            # Draw a line on the floor
+            line_start = [x_limits[2], y_limits[1], 0]
+            line_end = [x_limits[2], y_limits[2], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)
+            # Draw a line on the floor
+            line_start = [x_limits[0], y_limits[0], 0]
+            line_end = [x_limits[1], y_limits[0], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)        
+            # Draw a line on the floor
+            line_start = [x_limits[1], y_limits[1], 0]
+            line_end = [x_limits[2], y_limits[1], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)        
+            # Draw a line on the floor
+            line_start = [x_limits[0], y_limits[2], 0]
+            line_end = [x_limits[2], y_limits[2], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)
+        elif table_direction[0] == 'down' and table_direction[1] == 'right':
+            line_color = [1, 1, 1]  # White color
+            # Draw a line on the floor
+            line_start = [x_limits[0], y_limits[0], 0]
+            line_end = [x_limits[0], y_limits[2], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)        
+            # Draw a line on the floor
+            line_start = [x_limits[1], y_limits[1], 0]
+            line_end = [x_limits[1], y_limits[2], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)        
+            # Draw a line on the floor
+            line_start = [x_limits[2], y_limits[0], 0]
+            line_end = [x_limits[2], y_limits[1], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)
+            # Draw a line on the floor
+            line_start = [x_limits[0], y_limits[0], 0]
+            line_end = [x_limits[2], y_limits[0], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)        
+            # Draw a line on the floor
+            line_start = [x_limits[1], y_limits[1], 0]
+            line_end = [x_limits[2], y_limits[1], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)        
+            # Draw a line on the floor
+            line_start = [x_limits[0], y_limits[2], 0]
+            line_end = [x_limits[1], y_limits[2], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)
+        elif table_direction[0] == 'up' and table_direction[1] == 'left':
+            line_color = [1, 1, 1]  # White color
+            # Draw a line on the floor
+            line_start = [x_limits[0], y_limits[1], 0]
+            line_end = [x_limits[0], y_limits[2], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)        
+            # Draw a line on the floor
+            line_start = [x_limits[1], y_limits[0], 0]
+            line_end = [x_limits[1], y_limits[1], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)        
+            # Draw a line on the floor
+            line_start = [x_limits[2], y_limits[0], 0]
+            line_end = [x_limits[2], y_limits[2], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)
+            # Draw a line on the floor
+            line_start = [x_limits[1], y_limits[0], 0]
+            line_end = [x_limits[2], y_limits[0], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)        
+            # Draw a line on the floor
+            line_start = [x_limits[0], y_limits[1], 0]
+            line_end = [x_limits[1], y_limits[1], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)        
+            # Draw a line on the floor
+            line_start = [x_limits[0], y_limits[2], 0]
+            line_end = [x_limits[2], y_limits[2], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)
+        elif table_direction[0] == 'down' and table_direction[1] == 'left':
+            line_color = [1, 1, 1]  # White color
+            # Draw a line on the floor
+            line_start = [x_limits[0], y_limits[0], 0]
+            line_end = [x_limits[0], y_limits[1], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)        
+            # Draw a line on the floor
+            line_start = [x_limits[1], y_limits[1], 0]
+            line_end = [x_limits[1], y_limits[2], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)        
+            # Draw a line on the floor
+            line_start = [x_limits[2], y_limits[0], 0]
+            line_end = [x_limits[2], y_limits[2], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)
+            # Draw a line on the floor
+            line_start = [x_limits[0], y_limits[0], 0]
+            line_end = [x_limits[2], y_limits[0], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)        
+            # Draw a line on the floor
+            line_start = [x_limits[0], y_limits[1], 0]
+            line_end = [x_limits[1], y_limits[1], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)        
+            # Draw a line on the floor
+            line_start = [x_limits[1], y_limits[2], 0]
+            line_end = [x_limits[2], y_limits[2], 0]
+            p.addUserDebugLine(line_start, line_end, line_color, lineWidth=5)
+
+
 
         
         # What is all that?

@@ -37,7 +37,7 @@ def fit_data(data):
         return -estimator.bic(X)
 
     param_grid = {
-        "n_components": range(2, 3),
+        "n_components": range(20, 21),
         "covariance_type": ["full"],        # We can put this"covariance_type": ["spherical", "tied", "diag", "full"]
     }                                       # but shape of grid_search.best_estimator_.covariances_ changes 
     grid_search = GridSearchCV(
@@ -120,8 +120,8 @@ def write_model_data(model_data_path,n_components, means, covariances, weights):
 
 
 
-data_path = 'Data/data_no_table_2.h5'
-model_data_paths = ['Data/model_no_table_full.h5', 'Data/model_no_table_2d.h5']
+data_path = 'Data/data_pres.h5'
+model_data_paths = ['Data/model_full_20.h5', 'Data/model_2d_20.h5']
 data, x, y =  read_data(data_path)
 n_components, means, covariances, weights = fit_data(data)
 plot_data(x, y, n_components, means, covariances)

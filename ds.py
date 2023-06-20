@@ -28,6 +28,18 @@ def linear_hitting_ds_momentum(A1, X, X_obj, v_hit, p_des, lambda_current):
     dX = (p_des/lambda_current) * dX / np.linalg.norm(dX)
     return dX
 
+
+
+# dX [ 0.97678668 -0.01854278 -0.4594802 ]
+# dX [ 0.97246504 -0.01846031 -0.46149434]
+# dX [ 0.95254465 -0.01808095 -0.45775224]
+# dX [ 0.93123475 -0.0176718  -0.45573807]
+
+# dX [-0.53308755  0.01081674 -0.77031969]
+# dX [-0.53877058  0.01260077 -0.76596039]
+# dX [-0.54855607  0.01665829 -0.75824172]
+# dX [-0.5569254   0.02408001 -0.75128407]
+
 def linear_hitting_ds_pre_impact(A1, X, X_obj, v_hit, p_des, lambda_current, m_obj):
     '''
     '''
