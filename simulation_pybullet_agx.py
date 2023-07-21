@@ -9,11 +9,17 @@ from iiwa_environment import object
 from iiwa_environment import physics as phys
 import functions as f
 
+from enum import Enum
+
 # AGX
 from pClick import Client
 from pClick import MessageFactory
 
+Control = Enum('Control', ['ANGLE', 'ANGLE_VELOCITY', 'TORQUE'])
+
 AGX = True
+CONTROL_AGX = Control.ANGLE_VELOCITY
+
 
 ######################### PARAMETERS ###############################
 trailDuration = 0 # Make it 0 if you don't want the trail to end
@@ -25,7 +31,7 @@ iiwa = sim_robot_env(1, box)
 
 ###################### INIT CONDITIONS #################################
 X_init = [0.3, -0.2, 0.5]
-q_init = iiwa.get_IK_joint_position(X_init) # Currently I am not changing any weights here
+q_init = iiwa.get_IK_joint_position(X_init) # Currently I am not changing any weights here (q_init needs to be the same as in IiwaPybullet.yml)
 Lambda_init = iiwa.get_inertia_matrix_specific(q_init)
 
 ##################### DS PROPERTIES ####################################
@@ -69,21 +75,20 @@ for X_ref in X_ref_grid:
     time.sleep(1)
 
     if AGX:
-        # Moves AGX with pos control
-        joint_pos_iiwa = iiwa.get_joint_position()
-        print("JOINT ", joint_pos_iiwa)
-        message = MessageFactory.create_controlmessage()
-        robot = message.objects["robot"]
-        robot.angles.extend(list(joint_pos_iiwa))
-        client.send(message)
-        response = client.recv()
-        # take some time
-        time.sleep(1)
+        if CONTROL_AGX == Control.ANGLE:
+            # Moves AGX with pos control
+            joint_pos_iiwa = iiwa.get_joint_position()
+            print("JOINT ", joint_pos_iiwa)
+            message = MessageFactory.create_controlmessage()
+            robot = message.objects["robot"]
+            robot.angles.extend(list(joint_pos_iiwa))
+            client.send(message)
+            response = client.recv()
+            # take some time
+            time.sleep(1)
 
     # initialise the time
     time_init = time.time()
-
-
 
     # Start the motion
     while 1:
@@ -114,16 +119,27 @@ for X_ref in X_ref_grid:
 
 
         if AGX:
-            # Moves AGX with pos control
-            joint_pos_iiwa = iiwa.get_joint_position()
-            message = MessageFactory.create_controlmessage()
-            robot = message.objects["robot"]
-            robot.angles.extend(list(joint_pos_iiwa))
-            client.send(message)
-            response = client.recv()
+            if CONTROL_AGX == Control.ANGLE:
+                # Moves AGX with pos control
+                joint_pos_iiwa = iiwa.get_joint_position()
+                message = MessageFactory.create_controlmessage()
+                robot = message.objects["robot"]
+                robot.angles.extend(list(joint_pos_iiwa))
+                client.send(message)
+                response = client.recv()
 
+
+            elif CONTROL_AGX == Control.ANGLE_VELOCITY:
+                message = MessageFactory.create_controlmessage()
+                robot = message.objects["robot"]
+                robot.angleVelocities.extend(list(q_dot))
+                client.send(message)
+                response = client.recv()
 
         time_now = time.time()
 
         if(is_hit and iiwa.get_box_speed() < 0.001 and time_now - time_init > contactTime):
             break
+
+
+# sudo python3 ../run-in-docker.py python3 click_application.py --model models/Projects/i_am_project/Scenes/IiwaPybullet.yml --timeStep 0.005 --agxOnly --rcs --portRange 5656 5658 --realTime 1 --disableClickSync

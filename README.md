@@ -24,6 +24,9 @@ git clone -b fix/model-structure git@git.algoryx.se:algoryx/external/i-am/urdf-a
 2. Clone this repo: `git clone https://github.com/Elise-J/iam_sim_agx.git`
 
 ### Start simulation
+
+Make sure the control selected in `simulation_pybullet_agx.py` ( line 21: `CONTROL_AGX`) corresponds to the controller used in AGX sim (line 59 and 60 in`urdf-application/PythonApplication/models/Projects/i_am_project/Scenes/IiwaRos.yml`)
+
 1. `cd  urdf-application/PythonApplication`
 2. `sudo python3 ../run-in-docker.py python3 click_application.py --model models/Projects/i_am_project/Scenes/IiwaPybullet.yml --timeStep 0.005 --agxOnly --rcs --portRange 5656 5658`
 3. go to `http://localhost:5656/` in your browser 
