@@ -4,6 +4,7 @@ import numpy as np
 import math
 from functions import get_stein_divergence
 
+
 class sim_robot_env:
     def __init__(self, use_sim, box_object):
 
@@ -15,12 +16,13 @@ class sim_robot_env:
         startPos = [0, 0, 0]
         startOrientation = p.getQuaternionFromEuler([0, 0, 0])
         p.setGravity(0, 0, -9.81)
-        p.setTimeStep(0.001)
+        p.setTimeStep(0.005)
         p.setRealTimeSimulation(use_sim)
         p.resetDebugVisualizerCamera(cameraDistance=1.60, cameraYaw=200, cameraPitch=-25.00,
-                                            cameraTargetPosition=[0, 0, 0])
+                                     cameraTargetPosition=[0, 0, 0])
 
-        self.robot = p.loadURDF("kuka_iiwa/model.urdf", startPos, startOrientation, useFixedBase=1)
+        self.robot = p.loadURDF("kuka_iiwa/model.urdf",
+                                startPos, startOrientation, useFixedBase=1)
 
         '''
         Create a scene too
@@ -30,13 +32,12 @@ class sim_robot_env:
                               [0.5, 0.3, 0.5], globalScaling=1.0, useFixedBase=0)
         tableOrientation = p.getQuaternionFromEuler([0, 0, math.pi / 2])
         self.table = p.loadURDF("descriptions/robot_descriptions/objects_description/objects/table.urdf",
-                           [1.15, 0.45, 0.0], tableOrientation, globalScaling=1.0, useFixedBase=1)
+                                [1.15, 0.45, 0.0], tableOrientation, globalScaling=1.0, useFixedBase=1)
         p.changeDynamics(self.box, -1, mass=box_object.mass, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
                          spinningFriction=0.02, restitution=0, lateralFriction=0.1)
         p.changeDynamics(self.table, 1, mass=10, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
                          spinningFriction=0.02, restitution=0, lateralFriction=0.1)
 
-        
         self.numJoints = p.getNumJoints(self.robot)
         self.ee_id = 6
         self.zeros = [0.0] * 7
@@ -47,7 +48,6 @@ class sim_robot_env:
 
         self.q_ll = -np.array([2.96, 2.09, 2.96, 2.09, 2.96, 2.09, 3.05])
         self.q_ul = np.array([2.96, 2.09, 2.96, 2.09, 2.96, 2.09, 3.05])
-
 
     def step(self):
         p.stepSimulation()
@@ -62,7 +62,7 @@ class sim_robot_env:
     def move_with_joint_velocities(self, q_dot):
         p.stepSimulation()
         p.setJointMotorControlArray(self.robot, range(self.numJoints), controlMode=p.VELOCITY_CONTROL,
-                               targetVelocities=q_dot.tolist())
+                                    targetVelocities=q_dot.tolist())
 
     def move_to_joint_position(self, q, q_dot):
         p.stepSimulation()
@@ -84,20 +84,24 @@ class sim_robot_env:
 
     def get_trans_jacobian(self):
         q = self.get_joint_position()
-        jac_t_fn, jac_r_fn = p.calculateJacobian(self.robot, self.ee_id, self.relative_ee, q, self.zeros, self.zeros)
+        jac_t_fn, jac_r_fn = p.calculateJacobian(
+            self.robot, self.ee_id, self.relative_ee, q, self.zeros, self.zeros)
         return jac_t_fn
 
     def get_rot_jacobian(self):
         q = self.get_joint_position()
-        jac_t_fn, jac_r_fn = p.calculateJacobian(self.robot, self.ee_id, self.relative_ee, q, self.zeros, self.zeros)
+        jac_t_fn, jac_r_fn = p.calculateJacobian(
+            self.robot, self.ee_id, self.relative_ee, q, self.zeros, self.zeros)
         return jac_r_fn
 
     def get_trans_jacobian_specific(self, q_specific):
-        jac_t_fn, jac_r_fn = p.calculateJacobian(self.robot, self.ee_id, self.relative_ee, q_specific, self.zeros, self.zeros)
+        jac_t_fn, jac_r_fn = p.calculateJacobian(
+            self.robot, self.ee_id, self.relative_ee, q_specific, self.zeros, self.zeros)
         return jac_t_fn
 
     def get_rot_jacobian_specific(self, q_specific):
-        jac_t_fn, jac_r_fn = p.calculateJacobian(self.robot, self.ee_id, self.relative_ee, q_specific, self.zeros, self.zeros)
+        jac_t_fn, jac_r_fn = p.calculateJacobian(
+            self.robot, self.ee_id, self.relative_ee, q_specific, self.zeros, self.zeros)
         return jac_r_fn
 
     def get_mass_matrix_specific(self, q):
@@ -128,7 +132,8 @@ class sim_robot_env:
             q_new[l] = q_new[l] + dq
             jac_t_fn = self.get_trans_jacobian_specific(q_new)
             mass_fn = p.calculateMassMatrix(self.robot, q_new)
-            A_new = np.array(np.linalg.inv(np.array(jac_t_fn) @ np.linalg.inv(np.array(mass_fn)) @ np.array(jac_t_fn).T))
+            A_new = np.array(np.linalg.inv(
+                np.array(jac_t_fn) @ np.linalg.inv(np.array(mass_fn)) @ np.array(jac_t_fn).T))
             g_new = get_stein_divergence(A_new, A_d)
             dg_dq[l] = ((g_new - g_current) / dq)
         return dg_dq
@@ -160,7 +165,8 @@ class sim_robot_env:
         return m
 
     def reset_box(self, box_position, box_orientation):
-        p.resetBasePositionAndOrientation(self.box, box_position, box_orientation)
+        p.resetBasePositionAndOrientation(
+            self.box, box_position, box_orientation)
         return 0
 
     def get_box_position_orientation(self):
@@ -173,15 +179,12 @@ class sim_robot_env:
         return np.linalg.norm(np.array(p.getBaseVelocity(self.box)[0]))
 
     def get_collision_points(self):
-         p.performCollisionDetection(self.physicsClient)
-         return np.array(p.getContactPoints(self.robot, self.box), dtype=object)
+        p.performCollisionDetection(self.physicsClient)
+        return np.array(p.getContactPoints(self.robot, self.box), dtype=object)
 
     def get_collision_position(self):
         collision_points = self.get_collision_points()
         return collision_points[0][5]
 
-
     def get_mesh_vertices(self):
         return p.getMeshData(self.box)
-
-         
