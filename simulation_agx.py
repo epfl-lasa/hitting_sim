@@ -1,8 +1,8 @@
 import numpy as np
 import time
 
-from ds import linear_hitting_ds_pre_impact, linear_ds, linear_hitting_ds
-from controller import get_joint_velocities_qp_dir_inertia_specific_NS, get_joint_velocities_qp_AGX
+from ds import linear_hitting_ds_pre_impact, linear_ds
+from controller import get_joint_velocities_qp_dir_inertia_specific_NS
 from get_robot import sim_robot_env
 from iiwa_environment import object
 import functions as f
@@ -13,9 +13,6 @@ from roboticstoolbox.robot.ERobot import ERobot
 # AGX
 from pClick import Client
 from pClick import MessageFactory
-
-INERTIA = True
-
 
 def reset_sim_agx():
     # Send 0 velocity
@@ -130,11 +127,8 @@ if __name__ == "__main__":
             X_qp = np.array(robot.fkine(robot.q))[:3, 3]
 
             if not is_hit:
-                if not INERTIA:
-                    dX = linear_hitting_ds(A, X_qp, X_ref, h_dir)
-                elif INERTIA:
-                    dX = linear_hitting_ds_pre_impact(
-                        A, X_qp, X_ref, h_dir, 0.7, lambda_dir, box.mass)
+                dX = linear_hitting_ds_pre_impact(
+                    A, X_qp, X_ref, h_dir, 0.7, lambda_dir, box.mass)
             else:
                 dX = linear_ds(A, X_qp, X_ref)
 
@@ -144,11 +138,8 @@ if __name__ == "__main__":
             lambda_dir = hit_dir.T @ lambda_current @ hit_dir
             jac = np.array(robot.jacob0(robot.q))[:3, :]
 
-            if not INERTIA:
-                q_dot = get_joint_velocities_qp_AGX(dX, jac)
-            elif INERTIA:
-                q_dot = get_joint_velocities_qp_dir_inertia_specific_NS(
-                    dX, jac, iiwa, hit_dir, 0.15, lambda_dir)
+            q_dot = get_joint_velocities_qp_dir_inertia_specific_NS(
+                dX, jac, iiwa, hit_dir, 0.15, lambda_dir)
 
             agx_send_vel_command(q_dot)
 
