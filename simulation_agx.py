@@ -11,8 +11,8 @@ from scipy.spatial.transform import Rotation as R
 from roboticstoolbox.robot.ERobot import ERobot
 
 # AGX
-from pClick import Client
-from pClick import MessageFactory
+from pclick import Client
+from pclick import MessageFactory
 
 def reset_sim_agx():
     # Send 0 velocity
