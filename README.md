@@ -22,7 +22,7 @@ Currently getting inertia matrix from Pybullet
 ```bash
 git clone -b fix/model-structure git@git.algoryx.se:algoryx/external/i-am/urdf-application.git
 ```
-2. Follow the docker installation steps here: sudo docker login registry.algoryx.se
+2. Follow the docker installation steps here https://git.algoryx.se/algoryx/external/i-am/urdf-application#installing-docker
 3. Log in to the docker registry with the credentials you have to login in gitlab 
 ```bash
 sudo docker login registry.algoryx.se
