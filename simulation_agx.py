@@ -25,6 +25,7 @@
 
 import numpy as np
 import time
+import os
 
 from ds import linear_hitting_ds_pre_impact, linear_ds
 from controller import get_joint_velocities_qp_dir_inertia_specific_NS
@@ -102,7 +103,7 @@ if __name__ == "__main__":
 
     ###################### Robot RBDyn ##################
 
-    robot = ERobot.URDF("./urdf_models/iiwa-pybullet.urdf")
+    robot = ERobot.URDF(os.path.dirname(os.path.realpath('__file__')) + "/urdf_models/iiwa-pybullet.urdf")
 
     ######################### PARAMETERS ###############################
     trailDuration = 0  # Make it 0 if you don't want the trail to end
