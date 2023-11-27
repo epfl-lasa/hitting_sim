@@ -4,10 +4,11 @@ import numpy as np
 import math
 from functions import get_stein_divergence
 
-class sim_robot_env:
-    def __init__(self, use_sim, box_object):
+class sim_robot:
+    def __init__(self, use_sim):
 
-        self.physicsClient = p.connect(p.GUI)
+        self.physicsClient = p.connect(p.GUI, options='--background_color_red=1 --background_color_green=1' +
+                             ' --background_color_blue=1 --width=1000 --height=1000')
         p.setAdditionalSearchPath(pybullet_data.getDataPath())
         p.resetSimulation()
         plane = p.loadURDF("plane_transparent.urdf")
@@ -20,40 +21,41 @@ class sim_robot_env:
         p.resetDebugVisualizerCamera(cameraDistance=1.60, cameraYaw=200, cameraPitch=-25.00,
                                             cameraTargetPosition=[0, 0, 0])
 
-        self.robot = p.loadURDF("kuka_iiwa/model.urdf", startPos, startOrientation, useFixedBase=1)
+        # self.robot = p.loadURDF("kuka_iiwa/model.urdf", startPos, startOrientation, useFixedBase=1)
+        self.robot = p.loadURDF("urdfs/franka_panda/panda.urdf", startPos, startOrientation, useFixedBase=True)
 
         '''
         Create a scene too
         the environment with the box and table for the different scenarios I would like in the simulation
         '''
-        self.box = p.loadURDF("descriptions/robot_descriptions/objects_description/objects/simple_box.urdf",
-                              [0.5, 0.3, 0.5], globalScaling=1.0, useFixedBase=0)
-        tableOrientation = p.getQuaternionFromEuler([0, 0, math.pi / 2])
-        self.table = p.loadURDF("descriptions/robot_descriptions/objects_description/objects/table.urdf",
-                           [1.15, 0.45, 0.0], tableOrientation, globalScaling=1.0, useFixedBase=1)
-        p.changeDynamics(self.box, -1, mass=box_object.mass, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
-                         spinningFriction=0.02, restitution=0, lateralFriction=0.1)
-        p.changeDynamics(self.table, 1, mass=10, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
-                         spinningFriction=0.02, restitution=0, lateralFriction=0.1)
-
         
         self.numJoints = p.getNumJoints(self.robot)
-        self.ee_id = 6
+        self.ee_id = 5
         self.zeros = [0.0] * 7
         self.relative_ee = [0, 0, 0]
 
-        self.q_dot_ul = np.array([1.48, 1.48, 1.74, 1.30, 2.26, 2.35, 2.35])
-        self.q_dot_ll = -np.array([1.48, 1.48, 1.74, 1.30, 2.26, 2.35, 2.35])
+        # iiwa
+        # self.q_dot_ul = np.array([1.48, 1.48, 1.74, 1.30, 2.26, 2.35, 2.35])
+        # self.q_dot_ll = -np.array([1.48, 1.48, 1.74, 1.30, 2.26, 2.35, 2.35])
 
-        self.q_ll = -np.array([2.96, 2.09, 2.96, 2.09, 2.96, 2.09, 3.05])
-        self.q_ul = np.array([2.96, 2.09, 2.96, 2.09, 2.96, 2.09, 3.05])
+        # self.q_ll = -np.array([2.96, 2.09, 2.96, 2.09, 2.96, 2.09, 3.05])
+        # self.q_ul = np.array([2.96, 2.09, 2.96, 2.09, 2.96, 2.09, 3.05])
 
+
+        # panda
+        self.q_dot_ul = np.array([2.175, 2.175, 2.175, 2.175, 2.61, 2.61, 2.61])
+        self.q_dot_ll = -np.array([2.175, 2.175, 2.175, 2.175, 2.61, 2.61, 2.61])
+
+        self.q_ul = np.array([2.89, 1.76, 2.89, -0.06, 2.89, 3.75, 2.89])
+        self.q_ll = -np.array([2.89, 1.76, 2.89, 3.07, 2.89, 0.01, 2.89])
+
+        self.rest_pose = self.q_ll + (self.q_ul - self.q_ll) / 2 + np.array([-0.8, 0, 0, 0, math.pi/2, 0.0, 0])
 
     def step(self):
         p.stepSimulation()
 
     def get_IK_joint_position(self, x):
-        return p.calculateInverseKinematics(self.robot, self.ee_id, x)
+        return p.calculateInverseKinematics(self.robot, self.ee_id, x, restPoses=self.rest_pose, lowerLimits=self.q_ll, upperLimits=self.q_ul)
 
     def set_to_joint_position(self, q):
         for i in range(self.numJoints):
@@ -112,6 +114,11 @@ class sim_robot_env:
         M = self.get_mass_matrix_specific(q)
         return np.array(np.linalg.inv(np.array(J) @ np.linalg.inv(np.array(M)) @ np.array(J).T))
 
+    def get_inv_inertia_matrix_specific(self, q):
+        J = self.get_trans_jacobian_specific(q)
+        M = self.get_mass_matrix_specific(q)
+        return np.array(np.array(J) @ np.linalg.inv(np.array(M)) @ np.array(J).T)
+
     def get_inertia_matrix(self):
         q = self.get_joint_position()
         J = self.get_trans_jacobian()
@@ -159,29 +166,5 @@ class sim_robot_env:
         m = np.sqrt(np.linalg.det(np.array(jac) @ np.array(jac).T))
         return m
 
-    def reset_box(self, box_position, box_orientation):
-        p.resetBasePositionAndOrientation(self.box, box_position, box_orientation)
-        return 0
-
-    def get_box_position_orientation(self):
-        return p.getBasePositionAndOrientation(self.box)
-
-    def get_box_velocity(self):
-        return p.getBaseVelocity(self.box)[0]
-
-    def get_box_speed(self):
-        return np.linalg.norm(np.array(p.getBaseVelocity(self.box)[0]))
-
-    def get_collision_points(self):
-         p.performCollisionDetection(self.physicsClient)
-         return np.array(p.getContactPoints(self.robot, self.box), dtype=object)
-
-    def get_collision_position(self):
-        collision_points = self.get_collision_points()
-        return collision_points[0][5]
-
-
-    def get_mesh_vertices(self):
-        return p.getMeshData(self.box)
 
          

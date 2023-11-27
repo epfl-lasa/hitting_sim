@@ -56,13 +56,12 @@ def get_joint_velocities_qp_dir_inertia(fx, jacobian, manipulator, direction):
 
     return solve_qp(P, q_, lb=manipulator.q_dot_ll, ub=manipulator.q_dot_ul, solver="osqp", eps_abs=1e-4)
 
-def get_joint_velocities_qp_dir_inertia_specific_NS(fx, jacobian, manipulator, direction, alpha, l_dir):
+def get_joint_velocities_qp_dir_inertia_specific_NS(fx, jacobian, manipulator, direction, alpha, l_dir, l_des):
 
     q_dot_1 = get_joint_velocities_qp(fx, jacobian, manipulator)
     N = (np.identity(7) - np.linalg.pinv(jacobian) @ jacobian)
     dl_dq_dir = manipulator.get_directional_inertia_gradient(direction)
-    q_dot_2 =  -alpha * (N @ dl_dq_dir * (l_dir - 6))
-    q_print = q_dot_2/alpha
+    q_dot_2 =  -alpha * (N @ dl_dq_dir * (l_dir - l_des))
     q_dot_return = q_dot_1 + q_dot_2.reshape(7, )
     return q_dot_return
 
@@ -114,9 +113,6 @@ def qp_controller(fx, jacobian, g_cur, A_d, manipulator, q_cur, dt):
 
     h_ = np.hstack((h1_, h2_))
 
-    # print(h_)
-
-    # print(P.shape, q_.shape, G_.shape, h_.shape, lower_bound.shape, manipulator.q_dot_ll.shape)
+   
     q_vel = solve_qp(P, q_, G=G_, h=h_, lb=lower_bound, ub=upper_bound, solver="osqp", eps_abs=1e-2)
-    # print(q_vel)
     return q_vel

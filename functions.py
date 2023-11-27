@@ -1,6 +1,9 @@
 import numpy as np
 import scipy as sp
 import scipy.linalg
+import zmq
+import time
+
 
 
 def get_stein_divergence(A_1, A_d):
@@ -65,3 +68,76 @@ def des_hitting_point_grid(box_object, init_position, face, grid_size):
         for i in range(grid_size):
             X_hit[i,:] = X_hit[i,:] + np.array([hit_grid_45[0, i], hit_grid_45[1, i], 0.0])
     return X_hit
+
+#######################################################################################
+
+
+'''
+Identifying the closest joint on the robot to the contact point
+'''
+
+def get_closest_joint(manipulator, contact_point):
+    for i in range(manipulator.numJoints):
+        pos = np.array(manipulator.physicsClient.getLinkState(manipulator.robot, i)[0])
+        distance = np.linalg.norm(pos - contact_point)
+        print("Distance to joint ", i, " is ", distance)
+    return 0
+
+
+
+
+
+#######################################################################################
+def zmq_init_recv(socket):
+    val = None
+    while val is None:
+        try:
+            val = socket.recv_pyobj(flags=zmq.DONTWAIT)
+            status = 1
+        except:
+            print('No input data! (yet) waiting...')
+            time.sleep(0.1)
+            pass
+    return val
+
+
+def zmq_try_recv(val, socket):
+    status = 0
+    try:
+        val = socket.recv_pyobj(flags=zmq.DONTWAIT)
+        status = 1
+    except:
+        pass
+    return val, status
+
+def zmq_try_recv_raw(val, socket):
+    status = 0
+    try:
+        val = socket.recv(flags=zmq.DONTWAIT)
+        status = 1
+    except:
+        pass
+    return val, status
+
+def init_subscriber(context, address, port):
+    # socket to receive stuff
+    socket = context.socket(zmq.SUB)
+    socket.setsockopt(zmq.CONFLATE, 1)
+    socket.connect("tcp://%s:%s" % (address, str(port)))
+    socket.setsockopt(zmq.SUBSCRIBE, b"")
+    return socket
+
+
+def init_subscriber_bind(context, address, port):
+    # socket to receive stuff
+    socket = context.socket(zmq.SUB)
+    socket.setsockopt(zmq.CONFLATE, 1)
+    socket.bind("tcp://%s:%s" % (address, str(port)))
+    socket.setsockopt(zmq.SUBSCRIBE, b"")
+    return socket
+
+
+def init_publisher(context, address, port):
+    socket = context.socket(zmq.PUB)
+    socket.bind("tcp://%s:%s" % (address, str(port)))
+    return socket
