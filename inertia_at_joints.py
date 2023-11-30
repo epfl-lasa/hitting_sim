@@ -49,36 +49,28 @@ through IK
 '''
 
 # q_des = robot.get_IK_joint_position_point(X_ref, robot.ee_id)
+
 q_des = robot.rest_pose
-dq = np.zeros(7)
-
-i = 0
-print("X_ref: ", X_ref)
-# for i in range(7):
-#     q_des = robot.get_IK_joint_position_point(X_ref, i)
-#     robot.set_to_joint_position(q_des)
-#     robot.step()
-#     print("point position: ", robot.get_point_position(i))
-#     J = robot.get_trans_jacobian_point(i)
-#     # print("J: ", J)
-#     print("highest speed: ", J@robot.q_dot_ul)
-#     print("effective inertia: ", robot.get_effective_inertia_point(v_dir, i))
-#     time.sleep(1)
-
-q_des = robot.get_IK_joint_position(X_ref)
+# q_des = robot.get_IK_joint_position(X_ref)
 robot.set_to_joint_position(q_des)
 robot.step()
 print(robot.get_ee_position())
+
+robot.draw_point([X_ref.tolist()], [[1, 0, 0]], 30, 0)
 while 1:
+    # robot.set_to_joint_position(q_des)
+    
+    q_des[5] = q_des[5] + 0.1
+    # robot.step()
     robot.set_to_joint_position(q_des)
     
-    print(robot.get_effective_inertia_point(v_dir, robot.ee_id))
+    # print(robot.get_effective_inertia_point(v_dir, robot.ee_id))
     robot.step()
-    print(robot.get_effective_inertia_point_influence_matrix(v_dir, robot.ee_id))
-    time.sleep(2)
-    i+=1
-    dq[robot.ee_id + 1] = 0.05
-    q_des = q_des + dq*i
+    # print(robot.get_effective_inertia_point_influence_matrix(v_dir, robot.ee_id))
+    time.sleep(1)
+    # i+=1
+    # dq[robot.ee_id + 1] = 0.05
+
 
 
 

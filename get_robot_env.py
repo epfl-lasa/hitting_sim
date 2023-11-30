@@ -18,8 +18,8 @@ class sim_robot_env:
                              ' --background_color_blue=1 --width=1000 --height=1000')
         self.physicsClient.setAdditionalSearchPath(pybullet_data.getDataPath())
         self.physicsClient.resetSimulation()
-        plane = self.physicsClient.loadURDF("plane_transparent.urdf")
-        self.physicsClient.changeVisualShape(plane, -1, rgbaColor=[0, 0, 0, 0])
+        self.plane = self.physicsClient.loadURDF("plane_transparent.urdf")
+        self.physicsClient.changeVisualShape(self.plane, -1, rgbaColor=[0, 0, 0, 0])
         startPos = [0, 0, 0]
         startOrientation = self.physicsClient.getQuaternionFromEuler([0, 0, 0])
         self.physicsClient.setGravity(0, 0, -9.81)
@@ -39,14 +39,16 @@ class sim_robot_env:
         '''
         if counter == 1:
             self.box = self.physicsClient.loadURDF("descriptions/robot_descriptions/objects_description/objects/simple_box.urdf",
-                                [0.5, 0.3, 0.5], globalScaling=1.0, useFixedBase=0)
-            tableOrientation = self.physicsClient.getQuaternionFromEuler([0, 0, math.pi / 2])
-            self.table = self.physicsClient.loadURDF("descriptions/robot_descriptions/objects_description/objects/table.urdf",
-                            [1.15, 0.45, 0.0], tableOrientation, globalScaling=1.0, useFixedBase=1)
+                                [0.5, 0.3, 0.2], globalScaling=1.0, useFixedBase=0)
+            # tableOrientation = self.physicsClient.getQuaternionFromEuler([0, 0, math.pi / 2])
+            # self.table = self.physicsClient.loadURDF("descriptions/robot_descriptions/objects_description/objects/table.urdf",
+                            # [1.15, 0.45, 0.0], tableOrientation, globalScaling=1.0, useFixedBase=1)
             self.physicsClient.changeDynamics(self.box, -1, mass=box_object.mass, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
                             spinningFriction=0.02, restitution=0, lateralFriction=0.15)
-            self.physicsClient.changeDynamics(self.table, 1, mass=10, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
-                            spinningFriction=0.02, restitution=0, lateralFriction=0.15)
+            self.physicsClient.changeDynamics(self.plane, -1, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
+                         spinningFriction=0.02, restitution=0, lateralFriction=0.3)
+            # self.physicsClient.changeDynamics(self.table, 1, mass=10, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
+            #                 spinningFriction=0.02, restitution=0, lateralFriction=0.15)
 
         
         self.numJoints = self.physicsClient.getNumJoints(self.robot)
@@ -79,7 +81,8 @@ class sim_robot_env:
         return self.physicsClient.calculateInverseKinematics(self.robot, self.ee_id, x, restPoses=self.rest_pose, lowerLimits=self.q_ll, upperLimits=self.q_ul)
 
     def get_IK_joint_position_point(self, x, point_id):
-        return self.physicsClient.calculateInverseKinematics(self.robot, point_id, x, restPoses=self.rest_pose, lowerLimits=self.q_ll, upperLimits=self.q_ul)
+        # return self.physicsClient.calculateInverseKinematics(self.robot, point_id, x, restPoses=self.rest_pose, lowerLimits=self.q_ll, upperLimits=self.q_ul)
+        return self.physicsClient.calculateInverseKinematics(self.robot, point_id, x, lowerLimits=self.q_ll, upperLimits=self.q_ul)
 
 
     def set_to_joint_position(self, q):
@@ -379,4 +382,14 @@ class sim_robot_env:
 
     def get_mesh_vertices(self):
         return self.physicsClient.getMeshData(self.box)
+    
+
+############################## DEBUG LINES ##############################################
+
+    def draw_line(self, point1, point2, color, linewidth, trailduration):
+        self.physicsClient.addUserDebugLine(point1, point2, color, linewidth, trailduration)
+
+    def draw_point(self, point, color, pointsize, trailduration):
+        self.physicsClient.addUserDebugPoints(point, color, pointsize, trailduration)
+
     
