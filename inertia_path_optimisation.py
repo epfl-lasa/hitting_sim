@@ -15,7 +15,7 @@ import functions as f
 from path_optimisation_functions import flux_ineq, vel_cost, vel_ineq, vel_cost_weight, vel_ineq_point_full, flux_ineq_point_full
 
 ################## GET THE ROBOT ######################################
-box = object.Box([0.2, 0.2, 0.2], 0.5)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
+box = object.Box([0.2, 0.2, 0.2], 1.5)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
 
 robot = sim_robot_env(1, box, 1)
 robot.set_to_joint_position(robot.rest_pose)
@@ -62,6 +62,7 @@ state = np.concatenate((joint_vel, slack_1, slack_2))
 q_current = np.array(robot.get_joint_position())
 weight = robot.get_effective_inertia_point_influence_matrix(v_dir, robot.ee_id)
 
+time.sleep(5)
 while 1:
     X_qp = np.array(robot.get_point_position(robot.ee_id))
     jac = np.array(robot.get_trans_jacobian_point(robot.ee_id))

@@ -115,6 +115,9 @@ class sim_robot_env:
     def get_point_position(self, point_id):
         return self.physicsClient.getLinkState(self.robot, point_id)[0]
     
+    def get_joint_cartesian_position(self, joint_id):
+        return self.physicsClient.getLinkState(self.robot, joint_id)[4]
+    
 
     '''
     Multiple different jacobian functions

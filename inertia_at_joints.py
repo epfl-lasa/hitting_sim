@@ -29,7 +29,8 @@ box_position_init = box_position_orientation[0]
 box_orientation_init = box_position_orientation[1]
 X_ref = f.des_hitting_point(box, box_position_init)
 
-X_ref[1] = -0.2
+X_ref[1] = -0.4
+X_ref[2] = 0.5
 v_dir = np.array([0, 1, 0])
 phi_des = 0.7
 
@@ -39,7 +40,7 @@ lambda_eff = robot.get_effective_inertia(v_dir)
 
 ###########################################
 
-robot.ee_id = 4
+robot.ee_id = 6
 
 q_current = np.array(robot.get_joint_position())
 
@@ -48,26 +49,26 @@ I wanna see which joints can reach the desired point
 through IK
 '''
 
-# q_des = robot.get_IK_joint_position_point(X_ref, robot.ee_id)
+q_des = robot.get_IK_joint_position_point(X_ref, robot.ee_id)
 
-q_des = robot.rest_pose
+# q_des = robot.rest_pose
 # q_des = robot.get_IK_joint_position(X_ref)
 robot.set_to_joint_position(q_des)
 robot.step()
 print(robot.get_ee_position())
 
-robot.draw_point([X_ref.tolist()], [[1, 0, 0]], 30, 0)
+robot.draw_point([X_ref.tolist()], [[1, 0, 0]], 50, 0)
 while 1:
     # robot.set_to_joint_position(q_des)
     
-    q_des[5] = q_des[5] + 0.1
+    # q_des[5] = q_des[5] + 0.1
     # robot.step()
     robot.set_to_joint_position(q_des)
     
     # print(robot.get_effective_inertia_point(v_dir, robot.ee_id))
     robot.step()
     # print(robot.get_effective_inertia_point_influence_matrix(v_dir, robot.ee_id))
-    time.sleep(1)
+    # time.sleep(1)
     # i+=1
     # dq[robot.ee_id + 1] = 0.05
 

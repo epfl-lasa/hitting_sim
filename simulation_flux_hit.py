@@ -28,7 +28,7 @@ contactTime = 0.5 # This is the time that the robot will be in contact with the 
 
 ################## GET THE ROBOT + ENVIRONMENT #########################
 box = object.Box([0.2, 0.2, 0.2], 0.5)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
-robot = sim_robot_env(1, box)
+robot = sim_robot_env(1, box, 1)
 
 ##################### DS PROPERTIES ####################################
 A = np.array([[-2, 0, 0], [0, -2, 0], [0, 0, -2]])
