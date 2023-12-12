@@ -57,7 +57,14 @@ robot.set_to_joint_position(q_des)
 robot.step()
 print(robot.get_ee_position())
 
-robot.draw_point([X_ref.tolist()], [[1, 0, 0]], 50, 0)
+# robot.draw_point([X_ref.tolist()], [[1, 0, 0]], 50, 0)
+# robot.draw_point([robot.get_joint_cartesian_position(0)], [[1, 0, 0]], 50, 0)
+robot.draw_point([robot.get_joint_cartesian_position(1)], [[1, 0, 0]], 50, 0)
+robot.draw_point([robot.get_joint_cartesian_position(2)], [[1, 0, 0]], 50, 0)
+robot.draw_point([robot.get_joint_cartesian_position(3)], [[1, 0, 0]], 50, 0)
+robot.draw_point([robot.get_joint_cartesian_position(4)], [[1, 0, 0]], 50, 0)
+robot.draw_point([robot.get_joint_cartesian_position(5)], [[1, 0, 0]], 50, 0)
+robot.draw_point([robot.get_joint_cartesian_position(6)], [[1, 0, 0]], 50, 0)
 while 1:
     # robot.set_to_joint_position(q_des)
     

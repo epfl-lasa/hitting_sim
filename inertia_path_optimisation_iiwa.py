@@ -19,15 +19,8 @@ box = object.Box([0.2, 0.2, 0.2], 1.5)  # the box is a cube of size 20 cm, and i
 
 robot = sim_robot_env(1, box, 1)
 
-init_position = [0.5, -0.25, 0.3]
-# init_orientation = [0.0, 0, 0,1 ]
-init_orientation = [-0.707, 0, 0, 0.707]
-
-# q_init = robot.get_IK_joint_position_orientation(init_position, init_orientation)
-q_init = robot.get_IK_joint_position(init_position)
-print(q_init)
 robot.set_to_joint_position(robot.rest_pose)
-# robot.set_to_joint_position(q_init)
+
 
 #Robot ee id can be changed here
 robot.ee_id = 6
