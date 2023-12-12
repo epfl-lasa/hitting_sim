@@ -64,7 +64,8 @@ class sim_robot_env:
         self.q_ll = -np.array([2.96, 2.09, 2.96, 2.09, 2.96, 2.09, 3.05])
         self.q_ul = np.array([2.96, 2.09, 2.96, 2.09, 2.96, 2.09, 3.05])
 
-        self.rest_pose = np.array([0.00, -0.6, 0.00, -1.7, 0.00, 0.00, 0.0])
+        # self.rest_pose = np.array([-0.4, 0.8, -0.1, -1.6, 0.0, 0.4, 0.0])
+        self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, 1.75, 0.0]) # Good position for hitting
 
 
         # panda
@@ -81,6 +82,9 @@ class sim_robot_env:
 
     def get_IK_joint_position(self, x):
         return self.physicsClient.calculateInverseKinematics(self.robot, self.ee_id, x, restPoses=self.rest_pose, lowerLimits=self.q_ll, upperLimits=self.q_ul)
+    
+    def get_IK_joint_position_orientation(self, x, orientation):
+        return self.physicsClient.calculateInverseKinematics(self.robot, self.ee_id, targetPosition=x, targetOrientation=orientation, restPoses=self.rest_pose, lowerLimits=self.q_ll, upperLimits=self.q_ul)
 
     def get_IK_joint_position_point(self, x, point_id):
         # return self.physicsClient.calculateInverseKinematics(self.robot, point_id, x, restPoses=self.rest_pose, lowerLimits=self.q_ll, upperLimits=self.q_ul)
