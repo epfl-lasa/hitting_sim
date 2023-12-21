@@ -14,8 +14,8 @@ class sim_robot_env:
             mode = p.GUI
 
         self.physicsClient = bc.BulletClient(mode
-                                              , options='--background_color_red=1 --background_color_green=1' +
-                             ' --background_color_blue=1 --width=1000 --height=1000')
+                                              , options='--background_color_red=1 --background_color_green=0.94' +
+                             ' --background_color_blue=0.96 --width=1000 --height=1000')
         self.physicsClient.setAdditionalSearchPath(pybullet_data.getDataPath())
         self.physicsClient.resetSimulation()
         self.plane = self.physicsClient.loadURDF("plane_transparent.urdf")
@@ -72,7 +72,7 @@ class sim_robot_env:
         self.q_ul = np.array([2.89, 1.76, 2.89, -0.06, 2.89, 3.75, 2.89])
         self.q_ll = -np.array([2.89, 1.76, 2.89, 3.07, 2.89, 0.01, 2.89])
 
-        self.rest_pose = self.q_ll + (self.q_ul - self.q_ll) / 2 + np.array([-0.9, 0, 0, 0, math.pi/2, 0.0, 0])
+        self.rest_pose = self.q_ll + (self.q_ul - self.q_ll) / 2 + np.array([-0.9, 0, 0, -0.5, math.pi/2, 0.0, 0])
 
     def step(self):
         self.physicsClient.stepSimulation()
@@ -108,6 +108,10 @@ class sim_robot_env:
         joint_state = self.physicsClient.getJointStates(self.robot, range(self.numJoints))
         joint_position = [state[0] for state in joint_state]
         return joint_position
+    
+    def get_joint_position_multi(self, joint_id):
+        joint_state = self.physicsClient.getJointStateMultiDof(self.robot, joint_id)
+        return joint_state
 
     def get_ee_position(self):
         return self.physicsClient.getLinkState(self.robot, self.ee_id)[0]

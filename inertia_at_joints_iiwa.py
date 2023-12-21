@@ -6,7 +6,7 @@ import pybullet_data
 import scipy
 import matplotlib.pyplot as plt
 
-from get_robot_env import sim_robot_env
+from get_robot_env_iiwa import sim_robot_env
 from iiwa_environment import object
 from iiwa_environment import physics as phys
 from ds import linear_hitting_ds_pre_impact, linear_ds
