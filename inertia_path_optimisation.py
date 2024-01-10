@@ -21,7 +21,7 @@ robot = sim_robot_env(1, box, 1)
 robot.set_to_joint_position(robot.rest_pose)
 
 #Robot ee id can be changed here
-robot.ee_id = 4
+robot.ee_id = 6
 
 ##################### DS PROPERTIES ####################################
 A = np.array([[-2, 0, 0], [0, -2, 0], [0, 0, -2]])
@@ -100,7 +100,7 @@ while 1:
         lambda_eff_list.append(lambda_eff)
         q_dot = get_joint_velocities_qp_dir_inertia_specific_NS(dX, jac, robot, hit_dir, 0.15, lambda_eff, lambda_des)
 
-        # print("lambda eff ", lambda_eff, "lambda des ", lambda_des, "flux ", lambda_eff/(lambda_eff + box.mass)*np.linalg.norm(jac @ q_dot))
+        print("lambda eff ", lambda_eff, "lambda des ", lambda_des, "flux ", lambda_eff/(lambda_eff + box.mass)*np.linalg.norm(jac @ q_dot))
 
     else:
         dX = linear_ds(A, X_qp, X_ref)
@@ -110,7 +110,7 @@ while 1:
     robot.move_with_joint_velocities(q_dot)
     weight = robot.get_effective_inertia_point_influence_matrix(hit_dir, robot.ee_id)
 
-    print("weight ", weight)
+    # print("weight ", weight)
 
     # Need something more here later, this is contact detection and getting the contact point
     if(robot.get_collision_points().size != 0):

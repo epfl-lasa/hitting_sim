@@ -40,7 +40,7 @@ lambda_eff = robot.get_effective_inertia(v_dir)
 
 ###########################################
 
-robot.ee_id = 3
+robot.ee_id = 5
 q_current = np.array(robot.get_joint_position())
 
 ################### OPTIMIZATION FOR TOTAL DIRECTIONAL INERTIA ##############################
@@ -68,6 +68,7 @@ res = scipy.optimize.minimize(max_inertia, state_not_hit, args=(state_hit, robot
 sol = res.x
 sol = sol.tolist()
 
+print(sol)
 des_pose[robot.ee_id:] = sol
 
 robot.step()
