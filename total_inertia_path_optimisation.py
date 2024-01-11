@@ -15,13 +15,13 @@ import functions as f
 from path_optimisation_functions import flux_ineq, vel_ineq, vel_cost_weight, vel_cost_weight_generic, max_inertia
 
 ################## GET THE ROBOT ######################################
-box = object.Box([0.2, 0.2, 0.2], 1.5)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
+box = object.Box([0.2, 0.2, 0.2], 0.5)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
 
 robot = sim_robot_env(1, box, 1)
 robot.set_to_joint_position(robot.rest_pose)
 
 #Robot ee id can be changed here
-robot.ee_id = 5
+robot.ee_id = 6
 
 ##################### DS PROPERTIES ####################################
 A = np.array([[-2, 0, 0], [0, -2, 0], [0, 0, -2]])
@@ -129,8 +129,9 @@ while 1:
         print("lambda eff ", lambda_eff, "lambda des ", lambda_des, "flux ", lambda_eff/(lambda_eff + box.mass)*np.linalg.norm(jac @ q_dot))
 
     else:
-        dX = linear_ds(A, X_qp, X_ref)
-        q_dot = get_joint_velocities_qp(dX, jac, robot)
+        # dX = linear_ds(A, X_qp, X_ref)
+        # q_dot = get_joint_velocities_qp(dX, jac, robot)
+        q_dot = np.zeros(7)
 
     # '''The different DS are controlled differently'''
     robot.move_with_joint_velocities(q_dot)
@@ -139,7 +140,7 @@ while 1:
     # print("weight ", weight)
 
     # Need something more here later, this is contact detection and getting the contact point
-    if(robot.get_collision_points().size != 0):
+    if(robot.get_collision_points().size != 0 and is_hit == 0):
         is_hit = True
         robot.get_collision_position()
         hit_point = robot.get_collision_position()
