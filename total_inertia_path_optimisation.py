@@ -126,16 +126,18 @@ while 1:
         lambda_eff_list.append(lambda_eff)
         q_dot = get_joint_velocities_qp_dir_inertia_specific_NS(dX, jac, robot, hit_dir, 0.15, lambda_eff, lambda_des)
 
-        print("lambda eff ", lambda_eff, "lambda des ", lambda_des, "flux ", lambda_eff/(lambda_eff + box.mass)*np.linalg.norm(jac @ q_dot))
+        print("lambda eff ", lambda_eff, "lambda des ", lambda_des, "flux ", lambda_eff/(lambda_eff + box.mass)*(jac @ q_dot))
+        # print(np.linalg.norm(jac @ q_dot), "   ", robot.get_ee_velocity_current())
+        robot.move_with_joint_velocities(q_dot)
 
     else:
         # dX = linear_ds(A, X_qp, X_ref)
         # q_dot = get_joint_velocities_qp(dX, jac, robot)
         q_dot = np.zeros(7)
+        robot.move_with_joint_velocities(q_dot)
+
 
     # '''The different DS are controlled differently'''
-    robot.move_with_joint_velocities(q_dot)
-    weight = robot.get_effective_inertia_point_influence_matrix(hit_dir, robot.ee_id)
 
     # print("weight ", weight)
 
@@ -153,8 +155,11 @@ while 1:
         print("hit velocity ", hit_velocity)
         print("hit inertia ", hit_inertia)
         print("hit joint pos ", hit_joint_pos)
+        print("object velocity ", robot.get_box_speed())
         printed = 1
 
+    # robot.move_with_joint_velocities(q_dot)
+    # weight = robot.get_effective_inertia_point_influence_matrix(hit_dir, robot.ee_id)
     robot.step()
 
     lambda_eff = robot.get_effective_inertia_point(hit_dir, robot.ee_id)

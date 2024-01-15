@@ -71,7 +71,8 @@ def get_joint_velocities_qp_dir_inertia_NS(fx, jacobian, manipulator, direction,
 
     q_dot_1 = get_joint_velocities_qp(fx, jacobian, manipulator)
     N = (np.identity(7) - np.linalg.pinv(jacobian) @ jacobian)
-    dl_dq_dir = manipulator.get_directional_inertia_gradient(direction)
+    # dl_dq_dir = manipulator.get_directional_inertia_gradient(direction)
+    dl_dq_dir = manipulator.get_effective_inertia_gradient(direction)
     # print(dl_dq_dir.T)
     q_dot_2 = alpha * (N @ dl_dq_dir)
     q_print = q_dot_2/alpha

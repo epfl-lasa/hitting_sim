@@ -44,7 +44,7 @@ class sim_robot_env:
             # self.table = self.physicsClient.loadURDF("descriptions/robot_descriptions/objects_description/objects/table.urdf",
                             # [1.15, 0.45, 0.0], tableOrientation, globalScaling=1.0, useFixedBase=1)
             self.physicsClient.changeDynamics(self.box, -1, mass=box_object.mass, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
-                            spinningFriction=0.02, restitution=0, lateralFriction=0.15)
+                            spinningFriction=0.02, restitution=0, lateralFriction=0.3)
             self.physicsClient.changeDynamics(self.plane, -1, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
                          spinningFriction=0.02, restitution=0, lateralFriction=0.3)
             # self.physicsClient.changeDynamics(self.table, 1, mass=10, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
