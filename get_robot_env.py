@@ -25,7 +25,7 @@ class sim_robot_env:
         self.physicsClient.setGravity(0, 0, -9.81)
         self.physicsClient.setTimeStep(0.001)
         self.physicsClient.setRealTimeSimulation(use_sim)
-        self.physicsClient.resetDebugVisualizerCamera(cameraDistance=1.60, cameraYaw=200, cameraPitch=-25.00,
+        self.physicsClient.resetDebugVisualizerCamera(cameraDistance=3.40, cameraYaw=135, cameraPitch=-25.00,
                                             cameraTargetPosition=[0, 0, 0])
         
         self.physicsClientID = self.physicsClient._client
