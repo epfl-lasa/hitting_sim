@@ -164,17 +164,17 @@ while (1):
     uncomment the lines ahead (you will lose control of the robot)
     '''
 
-    # if is_hit and robot.get_box_speed() < 0.001:
-    #     break
+    if is_hit and robot.get_box_speed() < 0.001:
+        break
 
-if printed == 0 and is_hit:
-    print("hit point des ", X_ref)
-    print("hit point ", hit_point)
-    print("hit velocity ", hit_velocity)
-    print("hit inertia ", hit_inertia)
-    print("hit joint pos ", hit_joint_pos)
-    print("object velocity ", object_velocity)
-    printed = 1
+# if printed == 0 and is_hit:
+#     print("hit point des ", X_ref)
+#     print("hit point ", hit_point)
+#     print("hit velocity ", hit_velocity)
+#     print("hit inertia ", hit_inertia)
+#     print("hit joint pos ", hit_joint_pos)
+#     print("object velocity ", object_velocity)
+#     printed = 1
 
 
 lambda_eff_list = np.array(lambda_eff_list)
