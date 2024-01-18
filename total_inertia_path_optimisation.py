@@ -15,7 +15,7 @@ import functions as f
 from path_optimisation_functions import flux_ineq, vel_ineq, vel_cost_weight, vel_cost_weight_generic, max_inertia
 
 ################## GET THE ROBOT ######################################
-box = object.Box([0.3, 0.3, 0.3], 1.0)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
+box = object.Box([0.3, 0.3, 0.3], 0.5)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
 
 robot = sim_robot_env(1, box, 1)
 robot.set_to_joint_position(robot.rest_pose)
@@ -124,12 +124,14 @@ while (1):
         joint_vel = np.array(joint_vel)
 
         joint_pos = q_current + joint_vel*0.001
-        lambda_des = robot.get_effective_inertia_specific_point(joint_pos.tolist(), hit_dir, robot.ee_id)
+        # lambda_des = robot.get_effective_inertia_specific_point(joint_pos.tolist(), hit_dir, robot.ee_id)
+        lambda_des = robot.get_effective_inertia_specific_point(joint_pos.tolist(), v_dir, robot.ee_id)
 
         # lambda_des = 5
         lambda_des_list.append(lambda_des)
         lambda_eff_list.append(lambda_eff)
-        q_dot = get_joint_velocities_qp_dir_inertia_specific_point_NS(dX, jac, robot, hit_dir, 0.15, lambda_eff, lambda_des, robot.ee_id)
+        # q_dot = get_joint_velocities_qp_dir_inertia_specific_point_NS(dX, jac, robot, hit_dir, 0.15, lambda_eff, lambda_des, robot.ee_id)
+        q_dot = get_joint_velocities_qp_dir_inertia_specific_point_NS(dX, jac, robot, v_dir, 0.15, lambda_eff, lambda_des, robot.ee_id)
 
         # print("lambda eff ", lambda_eff, "lambda des ", lambda_des, "flux ", lambda_eff/(lambda_eff + box.mass)*(jac @ q_dot))
         # print(np.linalg.norm(jac @ q_dot), "   ", robot.get_ee_velocity_current())
@@ -144,7 +146,8 @@ while (1):
     # '''The different DS are controlled differently'''
     # print(q_dot)
 
-    lambda_eff = robot.get_effective_inertia_point(hit_dir, robot.ee_id)
+    # lambda_eff = robot.get_effective_inertia_point(hit_dir, robot.ee_id)
+    lambda_eff = robot.get_effective_inertia_point(v_dir, robot.ee_id)
     q_current = np.array(robot.get_joint_position())
     state = np.concatenate((q_dot, slack_1, slack_2))
 
