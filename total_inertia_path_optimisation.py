@@ -15,13 +15,13 @@ import functions as f
 from path_optimisation_functions import flux_ineq, vel_ineq, vel_cost_weight, vel_cost_weight_generic, max_inertia
 
 ################## GET THE ROBOT ######################################
-box = object.Box([0.3, 0.3, 0.3], 0.5)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
+box = object.Box([0.3, 0.3, 0.3], 2)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
 
 robot = sim_robot_env(1, box, 1)
 robot.set_to_joint_position(robot.rest_pose)
 
 #Robot ee id can be changed here
-robot.ee_id = 5
+robot.ee_id = 5   
 
 ##################### DS PROPERTIES ####################################
 A = np.array([[-2, 0, 0], [0, -2, 0], [0, 0, -2]])
@@ -133,8 +133,6 @@ while (1):
         # q_dot = get_joint_velocities_qp_dir_inertia_specific_point_NS(dX, jac, robot, hit_dir, 0.15, lambda_eff, lambda_des, robot.ee_id)
         q_dot = get_joint_velocities_qp_dir_inertia_specific_point_NS(dX, jac, robot, v_dir, 0.15, lambda_eff, lambda_des, robot.ee_id)
 
-        # print("lambda eff ", lambda_eff, "lambda des ", lambda_des, "flux ", lambda_eff/(lambda_eff + box.mass)*(jac @ q_dot))
-        # print(np.linalg.norm(jac @ q_dot), "   ", robot.get_ee_velocity_current())
         robot.move_with_joint_velocities(q_dot)
         robot.step()
 
