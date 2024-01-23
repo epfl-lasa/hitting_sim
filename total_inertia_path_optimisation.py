@@ -15,7 +15,7 @@ import functions as f
 from path_optimisation_functions import flux_ineq, vel_ineq, vel_cost_weight, vel_cost_weight_generic, max_inertia
 
 ################## GET THE ROBOT ######################################
-box = object.Box([0.3, 0.3, 0.3], 2)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
+box = object.Box([0.3, 0.3, 0.3], 0.5)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
 
 robot = sim_robot_env(1, box, 1)
 robot.set_to_joint_position(robot.rest_pose)

@@ -1,25 +1,14 @@
-from pyomo.environ import *
-import matplotlib.pyplot as plt
-import numpy as np
+import pyomo.environ as pyo
 
-import shutil
-import sys
-import os.path
+model = pyo.ConcreteModel()
 
-model = ConcreteModel()
+model.x = pyo.Var([1,2], domain=pyo.NonNegativeReals)
 
-# declare decision variables
-model.x = Var(domain=NonNegativeReals)
+model.OBJ = pyo.Objective(expr = 2*model.x[1] + 3*model.x[2])
 
-# declare objective
-model.profit = Objective(
-    expr = 40*model.x,
-    sense = maximize)
+model.Constraint1 = pyo.Constraint(expr = 3*model.x[1] + 4*model.x[2] >= 1)
 
-# declare constraints
-model.demand = Constraint(expr = model.x <= 40)
-model.laborA = Constraint(expr = model.x <= 80)
-model.laborB = Constraint(expr = 2*model.x <= 100)
+opt = pyo.SolverFactory('glpk')
+opt.solve(model) 
 
-# solve
-SolverFactory('cbc').solve(model).write()
+print('x1 = ', pyo.value(model.x[1]), ' x2 = ', pyo.value(model.x[2]), ' obj = ', pyo.value(model.OBJ))
