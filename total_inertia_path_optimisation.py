@@ -21,7 +21,7 @@ robot = sim_robot_env(1, box, 1)
 robot.set_to_joint_position(robot.rest_pose)
 
 #Robot ee id can be changed here
-robot.ee_id = 5   
+robot.ee_id = 5 
 
 ##################### DS PROPERTIES ####################################
 A = np.array([[-2, 0, 0], [0, -2, 0], [0, 0, -2]])
@@ -93,22 +93,28 @@ state = np.concatenate((joint_vel, slack_1, slack_2))
 
 q_current = np.array(robot.get_joint_position())
 weight = robot.get_effective_inertia_point_influence_matrix(v_dir, robot.ee_id)
+time.sleep(3)
 
-time.sleep(5)
+# video_name = "total_inertia_5.mp4"
+# robot.record_video(video_name)
 
+time.sleep(3)
+
+# print(robot.get_box_position_orientation()[0])
 
 while (1):
     X_qp = np.array(robot.get_point_position(robot.ee_id))
     jac = np.array(robot.get_trans_jacobian_point(robot.ee_id))
 
 
-    '''Follow the Hitting DS and then the Linear DS'''
+    '''Follow the Hitting DS and then Stop'''
     if not is_hit:
         
         dX = linear_hitting_ds_pre_impact(A, X_qp, X_ref, v_dir, phi_des, lambda_eff, box.mass)
         hit_dir = dX / np.linalg.norm(dX)
 
-        # weight = robot.get_effective_inertia_point_influence_matrix(hit_dir, robot.ee_id)
+        weight = robot.get_effective_inertia_point_influence_matrix(hit_dir, robot.ee_id)
+        # print(weight)
 
         constraints_opt = [{"type": "eq", "fun": vel_ineq, "args": [jac, dX]},
                             {"type": "eq", "fun": flux_ineq, "args": [lambda_eff, jac, phi_des, box.mass]}]
@@ -176,7 +182,10 @@ while (1):
 #     print("hit joint pos ", hit_joint_pos)
 #     print("object velocity ", object_velocity)
 #     printed = 1
+    
+# robot.stop_video()
 
+print(robot.get_box_position_orientation()[0])
 
 lambda_eff_list = np.array(lambda_eff_list)
 lambda_des_list = np.array(lambda_des_list)

@@ -15,13 +15,13 @@ import functions as f
 from path_optimisation_functions import flux_ineq, vel_ineq, vel_cost_weight, vel_cost_weight_generic, max_inertia
 
 ################## GET THE ROBOT ######################################
-box = object.Box([0.2, 0.2, 0.2], 2.5)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
+box = object.Box([0.2, 0.2, 0.2], 0.5)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
 
 robot = sim_robot_env(1, box, 1)
 robot.set_to_joint_position(robot.rest_pose)
 
 #Robot ee id can be changed here
-robot.ee_id = 5
+robot.ee_id = 6
 
 ##################### DS PROPERTIES ####################################
 A = np.array([[-2, 0, 0], [0, -2, 0], [0, 0, -2]])
@@ -34,7 +34,7 @@ X_ref = f.des_hitting_point(box, box_position_init) # This needs to come from th
 X_ref_grid = f.des_hitting_point_grid(box, box_position_init, 0, 5)
 
 v_dir = np.array([0, 1, 0])
-phi_des = 1.0
+phi_des = 0.8
 
 ################### OPTIMIZATION FOR TOTAL DIRECTIONAL INERTIA ##############################
 '''
@@ -105,6 +105,7 @@ while 1:
         dX = linear_hitting_ds_pre_impact(A, X_qp, X_ref, v_dir, phi_des, lambda_eff, box.mass)
         hit_dir = dX / np.linalg.norm(dX)
 
+        weight = robot.get_effective_inertia_point_influence_matrix(hit_dir, robot.ee_id)
 
         constraints_opt = [{"type": "eq", "fun": vel_ineq, "args": [jac, dX]},
                             {"type": "eq", "fun": flux_ineq, "args": [lambda_eff, jac, phi_des, box.mass]}]
@@ -120,45 +121,50 @@ while 1:
         joint_vel = np.array(joint_vel)
 
         joint_pos = q_current + joint_vel*0.001
+
         lambda_des = robot.get_effective_inertia_specific_point(joint_pos.tolist(), hit_dir, robot.ee_id)
+
         # lambda_des = 5
         lambda_des_list.append(lambda_des)
         lambda_eff_list.append(lambda_eff)
-        q_dot = get_joint_velocities_qp_dir_inertia_specific_NS(dX, jac, robot, hit_dir, 0.15, lambda_eff, lambda_des)
+        # q_dot = get_joint_velocities_qp_dir_inertia_specific_NS(dX, jac, robot, hit_dir, 0.15, lambda_eff, lambda_des)
+        q_dot = get_joint_velocities_qp_dir_inertia_specific_NS(dX, jac, robot, v_dir, 0.15, lambda_eff, lambda_des)
 
-        print("lambda eff ", lambda_eff, "lambda des ", lambda_des, "flux ", lambda_eff/(lambda_eff + box.mass)*np.linalg.norm(jac @ q_dot))
-
+        # print("lambda eff ", lambda_eff, "lambda des ", lambda_des, "flux ", lambda_eff/(lambda_eff + box.mass)*np.linalg.norm(jac @ q_dot))
+        robot.move_with_joint_velocities(q_dot)
+        robot.step()
     else:
-        dX = linear_ds(A, X_qp, X_ref)
-        q_dot = get_joint_velocities_qp(dX, jac, robot)
+        q_dot = np.zeros(7)
+        robot.move_with_joint_velocities(q_dot)
+        robot.step()
+
 
     # '''The different DS are controlled differently'''
-    robot.move_with_joint_velocities(q_dot)
-    weight = robot.get_effective_inertia_point_influence_matrix(hit_dir, robot.ee_id)
+    
+    lambda_eff = robot.get_effective_inertia_point(hit_dir, robot.ee_id)
+    q_current = np.array(robot.get_joint_position())
+    state = np.concatenate((q_dot, slack_1, slack_2))
 
     # print("weight ", weight)
 
     # Need something more here later, this is contact detection and getting the contact point
     if(robot.get_collision_points().size != 0):
         is_hit = True
-        robot.get_collision_position()
-        hit_point = robot.get_collision_position()
-        hit_velocity = robot.get_ee_velocity_current()
-        hit_inertia = robot.get_effective_inertia(hit_dir)
-        hit_joint_pos = robot.get_joint_position()
+        # robot.get_collision_position()
+        # hit_point = robot.get_collision_position()
+        # hit_velocity = robot.get_ee_velocity_current()
+        # hit_inertia = robot.get_effective_inertia(hit_dir)
+        # hit_joint_pos = robot.get_joint_position()
     
-    if printed == 0 and is_hit:
-        print("hit point ", hit_point)
-        print("hit velocity ", hit_velocity)
-        print("hit inertia ", hit_inertia)
-        print("hit joint pos ", hit_joint_pos)
-        printed = 1
+    # if printed == 0 and is_hit:
+    #     print("hit point ", hit_point)
+    #     print("hit velocity ", hit_velocity)
+    #     print("hit inertia ", hit_inertia)
+    #     print("hit joint pos ", hit_joint_pos)
+    #     printed = 1
 
-    robot.step()
 
-    lambda_eff = robot.get_effective_inertia_point(hit_dir, robot.ee_id)
-    q_current = np.array(robot.get_joint_position())
-    state = np.concatenate((q_dot, slack_1, slack_2))
+
 
 
     '''

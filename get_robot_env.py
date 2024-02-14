@@ -25,7 +25,7 @@ class sim_robot_env:
         self.physicsClient.setGravity(0, 0, -9.81)
         self.physicsClient.setTimeStep(0.001)
         self.physicsClient.setRealTimeSimulation(use_sim)
-        self.physicsClient.resetDebugVisualizerCamera(cameraDistance=3.40, cameraYaw=135, cameraPitch=-25.00,
+        self.physicsClient.resetDebugVisualizerCamera(cameraDistance=1.40, cameraYaw=79, cameraPitch=-33.80,
                                             cameraTargetPosition=[0, 0, 0])
         
         self.physicsClientID = self.physicsClient._client
@@ -357,8 +357,9 @@ class sim_robot_env:
 
     def get_effective_inertia_point_influence_matrix(self, direction, point_id):
         dL_dq_dir = self.get_effective_inertia_point_gradient(direction, point_id)
-        # dL_dq_dir[dL_dq_dir < 0] = 0
-        # # dL_dq_dir[dL_dq_dir > 0] = 1
+        dL_dq_dir[dL_dq_dir < 0] = 0
+        # dL_dq_dir[dL_dq_dir < 0] = -dL_dq_dir[dL_dq_dir < 0]
+        # dL_dq_dir[dL_dq_dir > 0] = dL_dq_dir[dL_dq_dir > 0] * 2
         return np.array(np.diag(dL_dq_dir.flatten()))
     
     def get_velocity_manipulability_metric(self):
@@ -399,4 +400,8 @@ class sim_robot_env:
     def draw_point(self, point, color, pointsize, trailduration):
         self.physicsClient.addUserDebugPoints(point, color, pointsize, trailduration)
 
-    
+    def record_video(self, filename):
+        self.physicsClient.startStateLogging(self.physicsClient.STATE_LOGGING_VIDEO_MP4, filename)
+
+    def stop_video(self):
+        self.physicsClient.stopStateLogging(self.physicsClient.STATE_LOGGING_VIDEO_MP4)

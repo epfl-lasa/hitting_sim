@@ -35,7 +35,7 @@ def vel_cost_generic(state):
     joint_vel = state[:n]
     slack_1 = state[n:n+3]
     slack_2 = state[n+3:]
-    return joint_vel.T @ joint_vel + 10*slack_1.T @ slack_1 + slack_2.T @ slack_2
+    return joint_vel.T @ joint_vel + 10*slack_1.T @ slack_1 + 0.5*slack_2.T @ slack_2
 
 
 def vel_cost_weight_generic(state, weight):
