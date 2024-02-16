@@ -21,7 +21,7 @@ robot = sim_robot_env(1, box, 1)
 robot.set_to_joint_position(robot.rest_pose)
 
 #Robot ee id can be changed here
-robot.ee_id = 5 
+robot.ee_id = 6 
 
 ##################### DS PROPERTIES ####################################
 A = np.array([[-2, 0, 0], [0, -2, 0], [0, 0, -2]])
@@ -93,7 +93,6 @@ state = np.concatenate((joint_vel, slack_1, slack_2))
 
 q_current = np.array(robot.get_joint_position())
 weight = robot.get_effective_inertia_point_influence_matrix(v_dir, robot.ee_id)
-time.sleep(3)
 
 # video_name = "total_inertia_5.mp4"
 # robot.record_video(video_name)

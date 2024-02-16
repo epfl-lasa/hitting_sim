@@ -10,7 +10,7 @@ from get_robot_env_iiwa import sim_robot_env
 from iiwa_environment import object
 from iiwa_environment import physics as phys
 from ds import linear_hitting_ds_pre_impact, linear_ds
-from controller import get_joint_velocities_qp_dir_inertia_specific_NS, get_joint_velocities_qp
+from controller import get_joint_velocities_qp_dir_inertia_specific_point_NS, get_joint_velocities_qp
 import functions as f
 from path_optimisation_functions import flux_ineq, vel_ineq, vel_cost_weight, vel_cost_weight_generic, max_inertia
 
@@ -21,7 +21,7 @@ robot = sim_robot_env(1, box, 1)
 robot.set_to_joint_position(robot.rest_pose)
 
 #Robot ee id can be changed here
-robot.ee_id = 6
+robot.ee_id = 4
 
 ##################### DS PROPERTIES ####################################
 A = np.array([[-2, 0, 0], [0, -2, 0], [0, 0, -2]])
@@ -48,10 +48,15 @@ q_current = np.array(robot.get_joint_position())
 state_hit = q_current[:robot.ee_id]
 state_not_hit = q_current[robot.ee_id:]
 
-hit_ul = robot.q_ul[robot.ee_id:]
-hit_ll = robot.q_ll[robot.ee_id:]
+print("state hit ", state_hit)
+print("state not hit ", state_not_hit)
 
-hit_decision_variables_bound = scipy.optimize.Bounds(np.array([*hit_ll]), np.array([*hit_ul]))
+not_hit_ul = robot.q_ul[robot.ee_id:]
+not_hit_ll = robot.q_ll[robot.ee_id:]
+
+hit_constraints = [{"type": "eq", "fun": max_inertia, "args": (state_hit, robot, v_dir, robot.ee_id)}]
+
+hit_decision_variables_bound = scipy.optimize.Bounds(np.array([*not_hit_ll]), np.array([*not_hit_ul]))
 
 hit_res = scipy.optimize.minimize(max_inertia, state_not_hit, args=(state_hit, robot, v_dir, robot.ee_id), method='SLSQP',
                                     bounds=hit_decision_variables_bound,
@@ -62,9 +67,11 @@ hit_sol = hit_sol.tolist()
 
 des_pose[robot.ee_id:] = hit_sol
 
-robot.set_to_joint_position(des_pose)
+print("des pose ", des_pose)
 
-robot.step()
+while(1):
+    robot.set_to_joint_position(des_pose)
+    robot.step()
 ###################### OPTIMIZATION ####################################
 
 ul = np.concatenate((robot.q_dot_ul, 0.05*np.ones(3), 0.1*np.ones(1)))
@@ -128,7 +135,7 @@ while 1:
         lambda_des_list.append(lambda_des)
         lambda_eff_list.append(lambda_eff)
         # q_dot = get_joint_velocities_qp_dir_inertia_specific_NS(dX, jac, robot, hit_dir, 0.15, lambda_eff, lambda_des)
-        q_dot = get_joint_velocities_qp_dir_inertia_specific_NS(dX, jac, robot, v_dir, 0.15, lambda_eff, lambda_des)
+        q_dot = get_joint_velocities_qp_dir_inertia_specific_point_NS(dX, jac, robot, v_dir, 0.15, lambda_eff, lambda_des, robot.ee_id)
 
         # print("lambda eff ", lambda_eff, "lambda des ", lambda_des, "flux ", lambda_eff/(lambda_eff + box.mass)*np.linalg.norm(jac @ q_dot))
         robot.move_with_joint_velocities(q_dot)

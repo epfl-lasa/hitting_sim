@@ -21,7 +21,7 @@ robot = sim_robot_env(1, box, 1)
 robot.set_to_joint_position(robot.rest_pose)
 
 #Robot ee id can be changed here
-robot.ee_id = 0 
+robot.ee_id = 1
 
 
 ################### OPTIMIZATION FOR TOTAL DIRECTIONAL INERTIA ##############################
@@ -36,7 +36,8 @@ robot.set_to_joint_position(des_pose)
 
 start = time.time()
 
-while time.time() - start < 0.1:
+# while time.time() - start < 0.1:
+for i in range(7):
     robot.step()
 
     print(robot.get_joint_cartesian_position(robot.ee_id))
