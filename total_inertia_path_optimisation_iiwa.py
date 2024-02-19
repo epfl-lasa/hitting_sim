@@ -12,7 +12,7 @@ from iiwa_environment import physics as phys
 from ds import linear_hitting_ds_pre_impact, linear_ds
 from controller import get_joint_velocities_qp_dir_inertia_specific_point_NS, get_joint_velocities_qp
 import functions as f
-from path_optimisation_functions import flux_ineq, vel_ineq, vel_cost_weight, vel_cost_weight_generic, max_inertia
+from path_optimisation_functions import flux_ineq, vel_ineq, vel_cost_weight, vel_cost_weight_generic, max_inertia, hit_constraints_function, dot_product_constraint
 
 ################## GET THE ROBOT ######################################
 box = object.Box([0.2, 0.2, 0.2], 0.5)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
@@ -51,16 +51,19 @@ state_not_hit = q_current[robot.ee_id:]
 print("state hit ", state_hit)
 print("state not hit ", state_not_hit)
 
-not_hit_ul = robot.q_ul[robot.ee_id:]
-not_hit_ll = robot.q_ll[robot.ee_id:]
+not_hit_ul = robot.q_ul[robot.ee_id :]
+not_hit_ll = robot.q_ll[robot.ee_id :]
 
-hit_constraints = [{"type": "eq", "fun": max_inertia, "args": (state_hit, robot, v_dir, robot.ee_id)}]
+hit_constraints = hit_constraints_function(state_not_hit, state_hit, robot, v_dir, robot.ee_id)
+
+print(hit_constraints)
 
 hit_decision_variables_bound = scipy.optimize.Bounds(np.array([*not_hit_ll]), np.array([*not_hit_ul]))
 
 hit_res = scipy.optimize.minimize(max_inertia, state_not_hit, args=(state_hit, robot, v_dir, robot.ee_id), method='SLSQP',
+                                    constraints=hit_constraints,
                                     bounds=hit_decision_variables_bound,
-                                    options={'disp': False})
+                                    options={'disp': True})
 
 hit_sol = hit_res.x
 hit_sol = hit_sol.tolist()
@@ -73,7 +76,7 @@ robot.step()
 
 print(np.array(robot.get_multi_joint_position([4, 5, 6])))
 
-multi_link_pos = robot.get_multi_joint_position([4, 5, 6])
+multi_link_pos = robot.get_multi_joint_position([0, 1, 2, 3, 4, 5, 6])
 
 for i in range(len(multi_link_pos)):
     print("multi link pos ", multi_link_pos[i])
@@ -82,8 +85,9 @@ for i in range(len(multi_link_pos)):
 while(1):
     robot.set_to_joint_position(des_pose)
     robot.step()
-    des_pose[robot.ee_id -1]= des_pose[robot.ee_id-1] + 0.1
-    time.sleep(0.1)
+    # des_pose[robot.ee_id]= des_pose[robot.ee_id] + 0.1
+    time.sleep(1)
+    break
 ###################### OPTIMIZATION ####################################
 
 ul = np.concatenate((robot.q_dot_ul, 0.05*np.ones(3), 0.1*np.ones(1)))

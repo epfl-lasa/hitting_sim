@@ -176,4 +176,23 @@ def max_inertia(state_not_hit, state_hit, manipulator, direction, ee_id):
     state = np.concatenate((state_hit, state_not_hit))
     state_list = state.tolist()
     return manipulator.get_inverse_effective_inertia_specific_point(state_list, direction, ee_id)
+
+
+def dot_product_constraint(state, a_1, a_2):
+    return -1*np.dot(a_1, a_2)
+
+
+def hit_constraints_function(state_not_hit, state_hit, manipulator, direction, ee_id):
+    cons = []
+    state = np.concatenate((state_hit, state_not_hit))
+    state_list = state.tolist()
     
+    # ee_id is the hitting one
+    multi_link_pos = manipulator.get_multi_joint_position(range(len(state_list)))
+
+    for i in range(1, len(state_not_hit)):
+        print(i)
+        vec = -np.array(multi_link_pos[ee_id]) + np.array(multi_link_pos[ee_id + i])
+        cons.append({"type": "ineq", "fun": dot_product_constraint, "args": (vec, direction)})
+
+    return cons
