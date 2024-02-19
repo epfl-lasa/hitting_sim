@@ -21,7 +21,7 @@ robot = sim_robot_env(1, box, 1)
 robot.set_to_joint_position(robot.rest_pose)
 
 #Robot ee id can be changed here
-robot.ee_id = 4
+robot.ee_id = 6
 
 ##################### DS PROPERTIES ####################################
 A = np.array([[-2, 0, 0], [0, -2, 0], [0, 0, -2]])
@@ -68,10 +68,22 @@ hit_sol = hit_sol.tolist()
 des_pose[robot.ee_id:] = hit_sol
 
 print("des pose ", des_pose)
+robot.set_to_joint_position(des_pose)
+robot.step()
+
+print(np.array(robot.get_multi_joint_position([4, 5, 6])))
+
+multi_link_pos = robot.get_multi_joint_position([4, 5, 6])
+
+for i in range(len(multi_link_pos)):
+    print("multi link pos ", multi_link_pos[i])
+    robot.draw_point([multi_link_pos[i]], [[1, 0, 0]], 10, 0)
 
 while(1):
     robot.set_to_joint_position(des_pose)
     robot.step()
+    des_pose[robot.ee_id -1]= des_pose[robot.ee_id-1] + 0.1
+    time.sleep(0.1)
 ###################### OPTIMIZATION ####################################
 
 ul = np.concatenate((robot.q_dot_ul, 0.05*np.ones(3), 0.1*np.ones(1)))

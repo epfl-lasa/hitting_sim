@@ -127,7 +127,19 @@ class sim_robot_env:
     def get_relative_link_com_position(self, link_id):
         return self.physicsClient.getLinkState(self.robot, link_id)[2]
     
+    def get_multi_link_position(self, link_ids):
+        pos = []
+        all_pos = self.physicsClient.getLinkStates(self.robot, link_ids)
+        for i in range(len(link_ids)):
+            pos.append(all_pos[i][0])
+        return pos
 
+    def get_multi_joint_position(self, joint_ids):
+        pos = []
+        all_pos = self.physicsClient.getLinkStates(self.robot, joint_ids)
+        for i in range(len(joint_ids)):
+            pos.append(all_pos[i][4])
+        return pos
     '''
     Multiple different jacobian functions
     '''

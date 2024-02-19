@@ -169,7 +169,9 @@ def flux_ineq_point_full(state, manipulator, phi_des, direction, mass_box, point
 
 '''
 maximize the inertia of the robot
+and a constraint to keep the robot behind the box
 '''
+
 def max_inertia(state_not_hit, state_hit, manipulator, direction, ee_id):
     state = np.concatenate((state_hit, state_not_hit))
     state_list = state.tolist()
