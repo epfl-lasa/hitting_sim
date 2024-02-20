@@ -175,9 +175,8 @@ and a constraint to keep the robot behind the box
 def max_inertia(state_not_hit, state_hit, manipulator, direction, ee_id):
     state = np.concatenate((state_hit, state_not_hit))
     state_list = state.tolist()
-    return manipulator.get_inverse_effective_inertia_specific_point(state_list, direction, ee_id)
-
-
+    return -1*manipulator.get_inverse_effective_inertia_specific_point(state_list, direction, ee_id)
+    
 def dot_product_constraint(state, a_1, a_2):
     return -1*np.dot(a_1, a_2)
 

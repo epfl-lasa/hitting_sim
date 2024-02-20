@@ -66,6 +66,7 @@ class sim_robot_env:
 
         # self.rest_pose = np.array([-0.4, 0.8, -0.1, -1.6, 0.0, 0.4, 0.0])
         self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, 1.75, 0.0]) # Good position for hitting
+        # self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, -2.0, 0.0]) # Good position for hitting for other joints
 
 
         # panda
