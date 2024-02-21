@@ -66,7 +66,7 @@ class sim_robot_env:
 
         # self.rest_pose = np.array([-0.4, 0.8, -0.1, -1.6, 0.0, 0.4, 0.0])
         self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, 1.75, 0.0]) # Good position for hitting
-        # self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, -2.0, 0.0]) # Good position for hitting for other joints
+        self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, -2.0, 0.0]) # Good position for hitting for other joints
 
 
         # panda
@@ -164,7 +164,9 @@ class sim_robot_env:
 
     def get_rot_jacobian_point(self, point_id):
         q = self.get_joint_position()
-        jac_t_fn, jac_r_fn = self.physicsClient.calculateJacobian(self.robot, point_id, self.relative_ee, q, self.zeros, self.zeros)
+        relative_dist = self.get_relative_link_com_position(point_id)
+
+        jac_t_fn, jac_r_fn = self.physicsClient.calculateJacobian(self.robot, point_id, relative_dist, q, self.zeros, self.zeros)
         return jac_r_fn
 
     def get_trans_jacobian_specific(self, q_specific):

@@ -43,7 +43,9 @@ grid = 100
 
 lambdas = np.zeros((grid, num_joints))
 
-for robot.ee_id in range(5, 4, -1):
+range_ee = range(5, 4, -1)
+
+for robot.ee_id in range_ee:
     j = 0
     for i in np.linspace(robot.q_ll[robot.ee_id], robot.q_ul[robot.ee_id], 100):
         robot.set_to_joint_position(des_pose)
@@ -56,7 +58,7 @@ for robot.ee_id in range(5, 4, -1):
 
 # Plot the inertia of the robot at each joint
 fig, ax = plt.subplots()
-for i in range(num_joints):
+for i in range_ee:
     ax.plot(np.linspace(robot.q_ll[i], robot.q_ul[i], 100), lambdas[:, i], label="joint " + str(i))
 
 plt.show()
