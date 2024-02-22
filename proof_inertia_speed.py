@@ -22,7 +22,7 @@ robot = sim_robot_env(1, box, 1)
 robot.set_to_joint_position(robot.rest_pose)
 
 # Robot ee id can be changed here
-robot.ee_id = 5
+# robot.ee_id = 5
 num_joints = 7
 
 ###################### DESIRED DIRECTIONAL PROPERTIES ##################
@@ -42,8 +42,10 @@ robot.step()
 grid = 100
 
 lambdas = np.zeros((grid, num_joints))
+speeds = np.zeros((grid, num_joints))
+fluxes = np.zeros((grid, num_joints))
 
-range_ee = range(5, 4, -1)
+range_ee = range(6, 3 -1)
 
 for robot.ee_id in range_ee:
     j = 0
@@ -51,14 +53,33 @@ for robot.ee_id in range_ee:
         robot.set_to_joint_position(des_pose)
         robot.step()
         lambdas[j, robot.ee_id] = robot.get_effective_inertia_point(v_dir, robot.ee_id)
+        speeds[j, robot.ee_id] = np.linalg.norm(np.array(robot.get_trans_jacobian_point(robot.ee_id)) @ robot.q_dot_ul)
+        fluxes[j, robot.ee_id] = (lambdas[j, robot.ee_id] / (lambdas[j, robot.ee_id] + 2)) * speeds[j, robot.ee_id]
         time.sleep(0.1)
         des_pose[robot.ee_id] = i
         j += 1
-# print(lambdas)
 
 # Plot the inertia of the robot at each joint
-fig, ax = plt.subplots()
-for i in range_ee:
-    ax.plot(np.linspace(robot.q_ll[i], robot.q_ul[i], 100), lambdas[:, i], label="joint " + str(i))
+# fig, (ax0, ax1, ax2) = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
+# for i in range_ee:
+#     ax0.plot(np.linspace(robot.q_ll[i], robot.q_ul[i], 100), lambdas[:, i], label="joint " + str(i))
+#     ax1.plot(np.linspace(robot.q_ll[i], robot.q_ul[i], 100), speeds[:, i], label="joint " + str(i))
+#     ax2.plot(np.linspace(robot.q_ll[i], robot.q_ul[i], 100), fluxes[:, i], label="joint " + str(i))
 
-plt.show()
+
+# ax0.set_title("Inertia")
+# ax0.set_xlabel("Joint position")
+# ax0.set_ylabel("Inertia")
+# # ax0.legend()
+
+# ax1.set_title("Speed")
+# ax1.set_xlabel("Joint position")
+# ax1.set_ylabel("Speed")
+# # ax1.legend()
+
+# ax2.set_title("Flux")
+# ax2.set_xlabel("Joint position")
+# ax2.set_ylabel("Flux")
+# # ax2.legend()
+
+# plt.show()

@@ -40,8 +40,10 @@ lambda_eff = robot.get_effective_inertia(v_dir)
 
 ###########################################
 
-robot.ee_id = 3
+robot.ee_id = 4
 q_current = np.array(robot.get_joint_position())
+
+
 
 ################### OPTIMIZATION FOR TOTAL DIRECTIONAL INERTIA ##############################
 '''
@@ -49,6 +51,21 @@ joint limits of the robot are one source of constraints
 No other constraints are considered
 '''
 des_pose = robot.rest_pose
+
+robot.set_to_joint_position(des_pose)
+robot.step()
+
+multi_link_pos = robot.get_multi_joint_position([0, 1, 2, 3, 4, 5, 6])
+
+for i in range(len(multi_link_pos)):
+    print("multi link pos ", multi_link_pos[i])
+    robot.draw_point([multi_link_pos[i]], [[1, 0, 0]], 20, 0)
+
+while 1:
+    robot.set_to_joint_position(des_pose)
+    robot.step()
+    break
+
 
 state_hit = q_current[:robot.ee_id]
 state_not_hit = q_current[robot.ee_id:]
