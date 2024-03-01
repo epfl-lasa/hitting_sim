@@ -30,7 +30,7 @@ class sim_robot:
         
         self.physicsClientID = self.physicsClient._client
 
-        self.robot = p.loadURDF("kuka_iiwa/model.urdf", startPos, startOrientation, useFixedBase=1)
+        self.robot = p.loadURDF("kuka_iiwa/model.urdf", startPos, startOrientation, useFixedBase=1, flags=p.URDF_USE_SELF_COLLISION)    
         # self.robot = self.physicsClient.loadURDF("urdfs/franka_panda/panda.urdf", startPos, startOrientation, useFixedBase=True)
 
         '''
@@ -392,6 +392,14 @@ class sim_robot:
     def get_mesh_vertices(self):
         return self.physicsClient.getMeshData(self.box)
     
+    def get_self_collision_points(self):
+        p.performCollisionDetection(self.physicsClientID)
+        return np.array(self.physicsClient.getContactPoints(self.robot, self.robot), dtype=object)
+
+    def get_plane_collision_points(self):
+        p.performCollisionDetection(self.physicsClientID)
+        return np.array(self.physicsClient.getContactPoints(self.robot, self.plane), dtype=object)
+
 
 ############################## DEBUG LINES ##############################################
 
