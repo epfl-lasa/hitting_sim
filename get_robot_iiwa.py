@@ -102,8 +102,20 @@ class sim_robot:
     def get_joint_cartesian_position(self, joint_id):
         return self.physicsClient.getLinkState(self.robot, joint_id)[4]
     
+    def get_link_com_position(self, link_id):
+        return self.physicsClient.getLinkState(self.robot, link_id)[0]
+
     def get_relative_link_com_position(self, link_id):
         return self.physicsClient.getLinkState(self.robot, link_id)[2]
+    
+    def get_link_com_orientation_world(self, link_id):
+        return self.physicsClient.getLinkState(self.robot, link_id)[1]
+    
+    def get_link_local_orientation(self, link_id):
+        return self.physicsClient.getLinkState(self.robot, link_id)[3]
+    
+    def get_link_urdf_orientation(self, link_id):
+        return self.physicsClient.getLinkState(self.robot, link_id)[5]
     
     def get_multi_link_position(self, link_ids):
         pos = []
@@ -135,18 +147,12 @@ class sim_robot:
     
     def get_trans_jacobian_point(self, point_id):
         q = self.get_joint_position()
-        relative_dist = 1* np.array(self.get_relative_link_com_position(point_id))
-        relative_dist = relative_dist.tolist()
-        # print("relative dist ", relative_dist)
-        jac_t_fn, jac_r_fn = self.physicsClient.calculateJacobian(self.robot, point_id, relative_dist, q, self.zeros, self.zeros)
-        # jac_t_fn, jac_r_fn = self.physicsClient.calculateJacobian(self.robot, point_id, self.relative_ee, q, self.zeros, self.zeros)
+        jac_t_fn, jac_r_fn = self.physicsClient.calculateJacobian(self.robot, point_id, self.relative_ee, q, self.zeros, self.zeros)
         return jac_t_fn
 
     def get_rot_jacobian_point(self, point_id):
         q = self.get_joint_position()
-        relative_dist = -1* self.get_relative_link_com_position(point_id)
-
-        jac_t_fn, jac_r_fn = self.physicsClient.calculateJacobian(self.robot, point_id, relative_dist, q, self.zeros, self.zeros)
+        jac_t_fn, jac_r_fn = self.physicsClient.calculateJacobian(self.robot, point_id, self.relative_ee, q, self.zeros, self.zeros)
         return jac_r_fn
 
     def get_trans_jacobian_specific(self, q_specific):
@@ -158,8 +164,7 @@ class sim_robot:
         return jac_r_fn
     
     def get_trans_jacobian_specific_point(self, q_specific, point_id):
-        relative_dist = self.get_relative_link_com_position(point_id)
-        jac_t_fn, jac_r_fn = self.physicsClient.calculateJacobian(self.robot, point_id, relative_dist, q_specific, self.zeros, self.zeros)
+        jac_t_fn, jac_r_fn = self.physicsClient.calculateJacobian(self.robot, point_id, self.relative_ee, q_specific, self.zeros, self.zeros)
         return jac_t_fn
 
     def get_rot_jacobian_specific_point(self, q_specific, point_id):
