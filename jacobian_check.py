@@ -11,7 +11,7 @@ from get_robot_iiwa import sim_robot
 
 ################## GET THE ROBOT ######################################
 
-robot = sim_robot(1, 1)
+robot = sim_robot(0, 1)
 robot.set_to_joint_position(robot.rest_pose)
 
 # Robot ee id can be changed here
@@ -23,12 +23,15 @@ robot.ee_id = 6
 joint limits of the robot are one source of constraints
 No other constraints are considered
 '''
-des_pose = robot.rest_pose
+des_pose = np.array([-2.960000018166925, -1.0050702259266853e-11, -1.48, -1.5045993919859056e-08, -2.959999922790245, 2.2587981844424473e-07, 3.049999948449989])
 # des_pose = np.zeros(7)
 
-q_current = np.array(robot.get_joint_position())
-
 robot.set_to_joint_position(des_pose)
-robot.step()
+# robot.step()
 
-q_current = np.array(robot.get_joint_position())
+# print(robot.get_inertia_matrix())
+# robot.set_to_joint_position(des_pose)
+# robot.step()
+print(robot.get_inertia_matrix_point(5))
+
+

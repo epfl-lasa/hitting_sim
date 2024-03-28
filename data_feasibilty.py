@@ -8,18 +8,14 @@ import math
 import matplotlib.pyplot as plt
 
 from get_robot_iiwa import sim_robot
-
-
-
+import pickle
 
 ################## GET THE ROBOT ######################################
 
-robot = sim_robot(1, 1)
+robot = sim_robot(0, 0)
 robot.set_to_joint_position(robot.rest_pose)
 
 v_dir = np.array([0, 1, 0])
-
-
 
 ################## GET THE OBJECTS ######################################
 
@@ -32,9 +28,11 @@ joint_grids = []
 # 40 - 8.84736e5     - 51 seconds  - 30  MB
 # 45 - 3.00125e5     - 16.5 seconds  - 10  MB
 
-grid_size = 45
+grid_size = 15
 
-sampling_interval = grid_size * math.pi / 180
+grid_size_array = np.array([30, 30, 30, 45, 45, 45, 90])
+
+sampling_interval = grid_size_array * math.pi / 180
 mesh_size = np.array((robot.q_ul-robot.q_ll)/sampling_interval, dtype=int)
 
 print("individual mesh sizes: ", mesh_size)
@@ -44,7 +42,7 @@ zero_vec = [0.0] * 7
 ############################################################################
 
 ############################################################################
-path_folder = 'data/iiwa_dataset_'+str(grid_size)
+path_folder = 'data/iiwa_dataset_plane_adapt_'+str(grid_size)
 
 if not os.path.exists(path_folder):
     recording = 1
@@ -59,31 +57,62 @@ if not os.path.exists(path_folder):
     
     N = mesh.shape[0]
 
-    print(N)
+    print("size = ", N)
     mesh = mesh[:N]
     q_list = []
-    # EEF position
-    ee_list = []
+    
     # Mass matrices
     M_list = []
-    # Inertia matrices
-    Lambda_list = []
-    # Inverse inertia matrices
-    Lambda_inv_list = []
-    # Jacobians
-    J_1_list = []
-    J_2_list = []
-    J_3_list = []
-    J_4_list = []
-    J_5_list = []
-    J_6_list = []
-    # Position of the robot
-    X_1_list = []
-    X_2_list = []
-    X_3_list = []
-    X_4_list = []
-    X_5_list = []
-    X_6_list = []
+
+    Lambda_inv = {}
+    Lambda_inv['2'] = []
+    Lambda_inv['3'] = []
+    Lambda_inv['4'] = []
+    Lambda_inv['5'] = []
+    Lambda_inv['6'] = []
+
+    Jacobians = {}
+    Jacobians['2'] = []
+    Jacobians['3'] = []
+    Jacobians['4'] = []
+    Jacobians['5'] = []
+    Jacobians['6'] = []
+
+
+    Joint_X_pos = {}
+    Joint_X_pos['2'] = []
+    Joint_X_pos['3'] = []
+    Joint_X_pos['4'] = []
+    Joint_X_pos['5'] = []
+    Joint_X_pos['6'] = []
+
+    q_list_collision = []
+
+    M_list_collision = []
+
+    Lambda_inv_collision = {}
+    Lambda_inv_collision['2'] = []
+    Lambda_inv_collision['3'] = []
+    Lambda_inv_collision['4'] = []
+    Lambda_inv_collision['5'] = []
+    Lambda_inv_collision['6'] = []
+
+    Jacobians_collision = {}
+    Jacobians_collision['2'] = []
+    Jacobians_collision['3'] = []
+    Jacobians_collision['4'] = []
+    Jacobians_collision['5'] = []
+    Jacobians_collision['6'] = []
+
+
+    Joint_X_pos_collision = {}
+    Joint_X_pos_collision['2'] = []
+    Joint_X_pos_collision['3'] = []
+    Joint_X_pos_collision['4'] = []
+    Joint_X_pos_collision['5'] = []
+    Joint_X_pos_collision['6'] = []
+    
+    
 else:
     recording = 0
 
@@ -96,31 +125,38 @@ else:
     N = mesh.shape[0]
 
 
-#############################################################################
+# #############################################################################
 
+i = 0
+j = 0
 
 st = time.time()
 for joint_pos in mesh:
     if recording == 1:
-        # joint_pos = robot.rest_pose
         robot.set_to_joint_position(joint_pos)
-        robot.step()
-        if(robot.get_self_collision_points().size == 0 and robot.get_plane_collision_points().size == 0):
-            
+        # robot.step()
+        # if(robot.get_self_collision_points().size == 0 and robot.get_plane_collision_points().size == 0):
+        if(robot.get_plane_collision_points().size == 0):
+            i = i + 1
+            print("all good", i)      
             # Get the data
             q = robot.get_joint_position()
-            Lambda = robot.get_inertia_matrix()
-            Lambda_inv = robot.get_inv_inertia_matrix()
-            M = robot.get_mass_matrix()
+            
+            Lambda_inv_2 = robot.get_inv_inertia_matrix_point(2)
+            Lambda_inv_3 = robot.get_inv_inertia_matrix_point(3)
+            Lambda_inv_4 = robot.get_inv_inertia_matrix_point(4)
+            Lambda_inv_5 = robot.get_inv_inertia_matrix_point(5)
+            Lambda_inv_6 = robot.get_inv_inertia_matrix_point(6)
 
-            J_1 = robot.get_trans_jacobian_point(1)
+            M = robot.get_mass_matrix()
+           
             J_2 = robot.get_trans_jacobian_point(2)
             J_3 = robot.get_trans_jacobian_point(3)
             J_4 = robot.get_trans_jacobian_point(4)
             J_5 = robot.get_trans_jacobian_point(5)
             J_6 = robot.get_trans_jacobian_point(6)
 
-            X_1 = robot.get_point_position(1)
+            
             X_2 = robot.get_point_position(2)
             X_3 = robot.get_point_position(3)
             X_4 = robot.get_point_position(4)
@@ -130,28 +166,71 @@ for joint_pos in mesh:
 
             # Store the data
             q_list.append(q)
-            Lambda_list.append(Lambda)
-            Lambda_inv_list.append(Lambda_inv)
+            
+            Lambda_inv['2'].append(Lambda_inv_2)
+            Lambda_inv['3'].append(Lambda_inv_3)
+            Lambda_inv['4'].append(Lambda_inv_4)
+            Lambda_inv['5'].append(Lambda_inv_5)
+            Lambda_inv['6'].append(Lambda_inv_6)
+
             M_list.append(M)
             
-            J_1_list.append(J_1)
-            J_2_list.append(J_2)
-            J_3_list.append(J_3)
-            J_4_list.append(J_4)
-            J_5_list.append(J_5)
-            J_6_list.append(J_6)
+            
+            Jacobians['2'].append(J_2)
+            Jacobians['3'].append(J_3)
+            Jacobians['4'].append(J_4)
+            Jacobians['5'].append(J_5)
+            Jacobians['6'].append(J_6)
 
-            X_1_list.append(X_1)
-            X_2_list.append(X_2)
-            X_3_list.append(X_3)
-            X_4_list.append(X_4)
-            X_5_list.append(X_5)
-            X_6_list.append(X_6)
+           
+            Joint_X_pos['2'].append(X_2)
+            Joint_X_pos['3'].append(X_3)
+            Joint_X_pos['4'].append(X_4)
+            Joint_X_pos['5'].append(X_5)
+            Joint_X_pos['6'].append(X_6)    
 
+            # time.sleep(0.1)        
+            
         else:
+            j = j + 1
+
+            print("Collision", j)
             continue
 
+q_list = np.array(q_list)
 
-np.save(path_folder + '/qs.npy', mesh)
-np.save(path_folder + '/ts.npy', ts)
-np.save(path_folder + '/Ms.npy', Ms)
+Lambda_inv['2'] = np.array(Lambda_inv['2'])
+Lambda_inv['3'] = np.array(Lambda_inv['3'])
+Lambda_inv['4'] = np.array(Lambda_inv['4'])
+Lambda_inv['5'] = np.array(Lambda_inv['5'])
+Lambda_inv['6'] = np.array(Lambda_inv['6'])
+
+M_list = np.array(M_list)
+
+
+Jacobians['2'] = np.array(Jacobians['2'])
+Jacobians['3'] = np.array(Jacobians['3'])
+Jacobians['4'] = np.array(Jacobians['4'])
+Jacobians['5'] = np.array(Jacobians['5'])
+Jacobians['6'] = np.array(Jacobians['6'])
+
+
+Joint_X_pos['2'] = np.array(Joint_X_pos['2'])
+Joint_X_pos['3'] = np.array(Joint_X_pos['3'])
+Joint_X_pos['4'] = np.array(Joint_X_pos['4'])
+Joint_X_pos['5'] = np.array(Joint_X_pos['5'])
+Joint_X_pos['6'] = np.array(Joint_X_pos['6'])
+
+
+np.save(path_folder + '/q_list.npy', q_list)
+np.save(path_folder + '/M_list.npy', M_list)
+
+with open(path_folder + '/Joint_X_pos.pkl', 'wb') as f:
+    pickle.dump(Joint_X_pos, f)
+
+with open(path_folder + '/Lambda_inv.pkl', 'wb') as f:
+    pickle.dump(Lambda_inv, f)
+
+with open(path_folder + '/Jacobians.pkl', 'wb') as f:
+    pickle.dump(Jacobians, f)
+

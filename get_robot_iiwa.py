@@ -30,7 +30,7 @@ class sim_robot:
         
         self.physicsClientID = self.physicsClient._client
 
-        self.robot = p.loadURDF("kuka_iiwa/model.urdf", startPos, startOrientation, useFixedBase=1, flags=p.URDF_USE_SELF_COLLISION)    
+        self.robot = p.loadURDF("kuka_iiwa/model7.urdf", startPos, startOrientation, useFixedBase=1, flags=p.URDF_USE_SELF_COLLISION)    
         # self.robot = self.physicsClient.loadURDF("urdfs/franka_panda/panda.urdf", startPos, startOrientation, useFixedBase=True)
 
         '''
