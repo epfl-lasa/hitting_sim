@@ -55,9 +55,9 @@ for robot.ee_id in range_ee:
         speed = np.array(robot.get_trans_jacobian_point(robot.ee_id)) @ q_dot_speed.x
         speeds[j, robot.ee_id] = speed[1] 
         
-        fluxes[j, robot.ee_id] = (lambdas[j, robot.ee_id] / (lambdas[j, robot.ee_id] + 2)) * speeds[j, robot.ee_id]
+        fluxes[j, robot.ee_id] = (lambdas[j, robot.ee_id] / (lambdas[j, robot.ee_id] + 0.2)) * speeds[j, robot.ee_id]
         
-        time.sleep(0.05)
+        # time.sleep(0.05)
         j += 1
 
 # Plot the inertia of the robot at each joint
@@ -68,19 +68,19 @@ for i in range_ee:
     ax2.plot(np.linspace(robot.q_ll[i], robot.q_ul[i], 100), fluxes[:, i], label="joint " + str(i), linewidth=5)
 
 
-# ax0.set_title("Inertia", fontsize=16)
+ax0.set_title("Directional Inertia (kg)", fontsize=13)
 ax0.set_xlabel("Joint motion range (rad)", fontsize=10)
-ax0.set_ylabel("Directional Inertia", fontsize=10)
-ax0.legend()
+# ax0.set_ylabel("Directional Inertia", fontsize=13)
+# ax0.legend()
 
-# ax1.set_title("Speed", fontsize=16)
+ax1.set_title("Max Hitting Speed (m/s)", fontsize=13)
 ax1.set_xlabel("Joint motion range (rad)", fontsize=10)
-ax1.set_ylabel("Speed", fontsize=10)
-ax1.legend()
+# ax1.set_ylabel("Speed", fontsize=13)
+# ax1.legend()
 
-# ax2.set_title("Hitting Flux", fontsize=16)
+ax2.set_title("Max Hitting Flux (m/s)", fontsize=13)
 ax2.set_xlabel("Joint motion range (rad)", fontsize=10)
-ax2.set_ylabel("Hitting Flux", fontsize=10)
+# ax2.set_ylabel("Hitting Flux", fontsize=13)
 ax2.legend()
 
 plt.show()
