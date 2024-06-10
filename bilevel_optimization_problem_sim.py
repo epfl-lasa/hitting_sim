@@ -85,7 +85,20 @@ def cost_fun_bilevel(x):
         det_cov = np.linalg.det(new_covariance)
         pdf = weights2[i]*(2 * np.pi * np.sqrt(det_cov))* multivariate_normal.pdf(Xf, mean=new_mean, cov=new_covariance)
         f = f + pdf
-    return -f + (bilevel_pdf_first_reach(x))
+    return -2.0*f + 0.1*(bilevel_pdf_first_reach(x))
+
+
+def cost_fun_total(x):
+    f = 0
+    R2 = np.squeeze(rotation_z(x[2]))
+    for i in range(n_components):
+        mean = means2[i] + (x[:2]-box2)
+        new_mean = R2 @ (mean-x[:2]) + x[:2] 
+        new_covariance = R2 @ covariances2[i] @ R2.T
+        det_cov = np.linalg.det(new_covariance)
+        pdf = weights2[i]*(2 * np.pi * np.sqrt(det_cov))* multivariate_normal.pdf(Xf, mean=new_mean, cov=new_covariance)
+        f = f + pdf
+    return -1.0*f*(bilevel_pdf_first_reach(x))
 
 def fun1(x,Xf):
 
@@ -104,7 +117,7 @@ def fun1(x,Xf):
     return f
 
 # CONSTRAINTS
-margin = 0.05
+margin = 0.15
 
 # Box always on Table
 def cons_1(x, alpha, Xf, x_limits, direction):
@@ -151,11 +164,10 @@ def cons_4(x, alpha, Xf, x_limits, y_limits, direction):
     else:
         return ((1 - alpha) * x[1] + alpha * Xf[1])-(y_limits[0]+margin) 
 
-
 def bilevel_constraints(Xf, x_limits, y_limits, direction):
     cons = []
 
-    # cons.append({'type': 'ineq', 'fun': lambda x:  bilevel_pdf_first_reach(x) - intersection_threshold}) #+ 0.001*x[4]},
+    cons.append({'type': 'ineq', 'fun': lambda x:  bilevel_pdf_first_reach(x) - intersection_threshold}) #+ 0.001*x[4]},
         
     for a in np.linspace(0.0,1.0,num=30):
         cons.append({'type': 'ineq', 'fun': lambda x, a=a: cons_1(x, a, Xf, x_limits, direction)})
@@ -287,6 +299,8 @@ def plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap,colo
     ax.legend()
     plt.show()
 
+
+
 def bilevel_find_sol(environment,x_limits,y_limits,direction, intersection_threshold):#P,Xf,means2, covariances2,n_components):  
     if environment:
         cons = bilevel_constraints(Xf, x_limits, y_limits, direction)
@@ -295,6 +309,7 @@ def bilevel_find_sol(environment,x_limits,y_limits,direction, intersection_thres
 
     guess_ = guess(P,Xf)
     result = minimize(cost_fun_bilevel, guess_, method='COBYLA', constraints=cons, tol=1e-8, options={'disp': True})
+    # result = minimize(cost_fun_total, guess_, method='COBYLA', constraints=cons, tol=1e-8, options={'disp': True})
     
     return result.x
 
@@ -334,50 +349,48 @@ def get_distances_from_X(start, end, middle):
 
     return distance_robot_1, distance_robot_2
 
-
-
 # box1 = np.array([0.52,0.41])
 
 # box2 = np.array([0.52,0.98])
 
 # TODO: link this to the other file so that the means and variances are automatically updated
-# means1 = np.array([[0.5021755 , 0.48001064], 
-#                   [0.48307691, 0.73329577]])
+means1 = np.array([[0.5021755 , 0.48001064], 
+                  [0.48307691, 0.73329577]])
 
-# covariances1 = np.array([[[0.00026569, 0.00025749],
-#                         [0.00025749, 0.00407336]],
-#                         [[ 0.00184485, -0.00123859],
-#                         [-0.00123859,  0.01655933]]])
+covariances1 = np.array([[[0.00026569, 0.00025749],
+                        [0.00025749, 0.00407336]],
+                        [[ 0.00184485, -0.00123859],
+                        [-0.00123859,  0.01655933]]])
 
-# weights1 = np.array([0.5083096399095122, 0.49169036009048783])
+weights1 = np.array([0.5083096399095122, 0.49169036009048783])
 
 
-# means2 = np.array([[0.5021755 , 0.48001064], 
-#                   [0.48307691, 0.73329577]])
+means2 = np.array([[0.5021755 , 0.48001064], 
+                  [0.48307691, 0.73329577]])
 
-# covariances2 = np.array([[[0.00026569, 0.00025749],
-#                         [0.00025749, 0.00407336]],
-#                         [[ 0.00184485, -0.00123859],
-#                         [-0.00123859,  0.01655933]]])
+covariances2 = np.array([[[0.00026569, 0.00025749],
+                        [0.00025749, 0.00407336]],
+                        [[ 0.00184485, -0.00123859],
+                        [-0.00123859,  0.01655933]]])
 
-# weights2 = np.array([0.5083096399095122, 0.49169036009048783])
+weights2 = np.array([0.5083096399095122, 0.49169036009048783])
 
 # model_fn = "Data/golf_XY_D1.h5" ## flux capped at 0.8
-model_fn = "Data/golf_XY_D1_complete.h5" ## flux not capped
+# model_fn = "Data/golf_XY_D1_complete.h5" ## flux not capped
 
-n_components, means1, covariances1, weights1 = read_model_data(model_fn)
-n_components, means2, covariances2, weights2 = read_model_data(model_fn)
+# n_components, means1, covariances1, weights1 = read_model_data(model_fn)
+# n_components, means2, covariances2, weights2 = read_model_data(model_fn)
 
 n_components = 2
-# box1 = np.array([0.5,0.3])
-# box2 = np.array([0.5,0.3])
-box1 = np.array([0.0,0.0]) #np.array([0.52,0.41])
-box2 = np.array([0.0,0.0]) #np.array([0.56,0.43])
+box1 = np.array([0.5,0.3])
+box2 = np.array([0.5,0.3])
+# box1 = np.array([0.0,0.0]) #np.array([0.52,0.41])
+# box2 = np.array([0.0,0.0]) #np.array([0.56,0.43])
 
 P = [0.0,0.0]
 Xf = [0.5,0.6]
-x_limits = [-0.25, 0.1, 1.2]  #[-0.25, 0.5]
-y_limits = [-0.2, 0.5, 0.9]
+x_limits = [-0.25, 0.25, 1.0]  #[-0.25, 0.5]
+y_limits = [-0.2, 0.4, 0.9]
 table_direction = ['up','right']
 environment = True
 
@@ -432,7 +445,7 @@ environment = True
 
 colormap = True
 colormap1 = True
-intersection_threshold = 0.5
+intersection_threshold = 0.2
 
 
 X_opt = bilevel_find_sol(environment, x_limits, y_limits, table_direction, intersection_threshold)
@@ -451,4 +464,5 @@ print("objective function = ", cost_fun_bilevel(X_opt))
 get_distances_from_X(P, Xf, X_opt[:2])
 
 plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap,colormap1)
+# plot_new(X_opt, environment, x_limits, y_limits, table_direction, colormap)
 
