@@ -6,6 +6,7 @@ from scipy.integrate import nquad
 from sklearn.mixture import GaussianMixture
 import matplotlib.pyplot as plt
 import ellipse
+import h5py
 
 '''
 Changing to two optimization variables
@@ -304,40 +305,77 @@ def find_theta(P,Xm, guess, means, covariances,n_components):
    print("pdf is: ", pdf_first_reach(result.x,Xm)) 
    return result.x
 
+def read_model_data(model_data_path):
+    # Open the HDF5 file in read mode
+    hf_1 = h5py.File(model_data_path, 'r')
+
+    # Read the parameters
+    n_components_full = hf_1['n_components'][()]
+    means_full = hf_1['means'][()]
+    covariances_full = hf_1['covariances'][()]
+    weights_full = hf_1['weights'][()]
+
+    # Close the HDF5 file
+    hf_1.close()
+
+    return n_components_full, means_full, covariances_full, weights_full
+
+def get_distances_from_X(start, end, middle):
+
+    distance_robot_1 = np.linalg.norm(middle-start)
+    distance_robot_2 = np.linalg.norm(end-middle)
+
+    print(f"Distance 1st robot : {distance_robot_1:.4f}")
+    print(f"Distance 2nd robot : {distance_robot_2:.4f}")
+
+    return distance_robot_1, distance_robot_2
+
 n_components = 2
 
 box1 = np.array([0.5,0.3])
 
-# TODO: link this to the other file so that the means and variances are automatically updated
-means1 = np.array([[0.5021755 , 0.48001064], 
-                  [0.48307691, 0.73329577]])
-
-covariances1 = np.array([[[0.00026569, 0.00025749],
-                        [0.00025749, 0.00407336]],
-                        [[ 0.00184485, -0.00123859],
-                        [-0.00123859,  0.01655933]]])
-
-weights1 = np.array([0.5083096399095122, 0.49169036009048783])
-
 box2 = np.array([0.5,0.3])
 
-means2 = np.array([[0.5021755 , 0.48001064], 
-                  [0.48307691, 0.73329577]])
+# TODO: link this to the other file so that the means and variances are automatically updated
+# means1 = np.array([[0.5021755 , 0.48001064], 
+#                   [0.48307691, 0.73329577]])
 
-covariances2 = np.array([[[0.00026569, 0.00025749],
-                        [0.00025749, 0.00407336]],
-                        [[ 0.00184485, -0.00123859],
-                        [-0.00123859,  0.01655933]]])
+# covariances1 = np.array([[[0.00026569, 0.00025749],
+#                         [0.00025749, 0.00407336]],
+#                         [[ 0.00184485, -0.00123859],
+#                         [-0.00123859,  0.01655933]]])
 
-weights2 = np.array([0.5083096399095122, 0.49169036009048783])
+# weights1 = np.array([0.5083096399095122, 0.49169036009048783])
 
 
-P = [0.2,0.0]
-Xf = [0.7,0.3]
-x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-y_limits = [-0.2, 0.2, 0.4]
+# means2 = np.array([[0.5021755 , 0.48001064], 
+#                   [0.48307691, 0.73329577]])
+
+# covariances2 = np.array([[[0.00026569, 0.00025749],
+#                         [0.00025749, 0.00407336]],
+#                         [[ 0.00184485, -0.00123859],
+#                         [-0.00123859,  0.01655933]]])
+
+# weights2 = np.array([0.5083096399095122, 0.49169036009048783])
+
+model_fn = "Data/GMM_fit_for_D1.h5"
+
+n_components, means1, covariances1, weights1 = read_model_data(model_fn)
+n_components, means2, covariances2, weights2 = read_model_data(model_fn)
+
+P = [0.0,0.0]
+Xf = [0.5,0.6]
+x_limits = [-0.25, 0.1, 1.2]  #[-0.25, 0.5]
+y_limits = [-0.2, 0.5, 0.9]
 table_direction = ['up','right']
 environment = True
+
+# P = [0.2,0.0]
+# Xf = [0.7,0.3]
+# x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
+# y_limits = [-0.2, 0.2, 0.4]
+# table_direction = ['up','right']
+# environment = True
 
 # P = [0.3,-0.18]
 # Xf = [-0.0,0.3]
@@ -398,6 +436,8 @@ print("theta_2 = ", np.rad2deg(X_opt[2]))
 
 print("intersection = ", bilevel_pdf_first_reach(X_opt))
 print("objective function = ", cost_fun_bilevel(X_opt))
+
+get_distances_from_X(P, Xf, X_opt[:2])
 
 plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap,colormap1)
 

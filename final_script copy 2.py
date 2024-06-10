@@ -1,6 +1,9 @@
 import numpy as np
 
 import h5py
+import matplotlib
+matplotlib.use('TkAgg')  # Change to a different backend if necessary
+
 import matplotlib.pyplot as plt
 import ellipse
 
@@ -260,7 +263,7 @@ def plot_optimization(X_opt, environment, x_limits, y_limits, table_direction, c
     theta2 = 210  # Adjust the start and end angles of the arc
     arrow_props = dict(arrowstyle='->', linewidth=2, color='black')
 
-    arc = patches.Arc(X_opt[:2], radius*2, radius*2, 0, theta1, theta2, linewidth=2)
+    arc = patches.Arc(xy=X_opt[:2], width=radius*2, height=radius*2, angle=0, theta1=theta1, theta2=theta2, linewidth=2)
     ax.add_patch(arc)
 
 
