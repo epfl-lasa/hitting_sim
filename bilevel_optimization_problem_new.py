@@ -310,15 +310,19 @@ def read_model_data(model_data_path):
     hf_1 = h5py.File(model_data_path, 'r')
 
     # Read the parameters
-    n_components_full = hf_1['n_components'][()]
-    means_full = hf_1['means'][()]
-    covariances_full = hf_1['covariances'][()]
-    weights_full = hf_1['weights'][()]
+    n_components = hf_1['n_components'][()]
+    means = hf_1['means'][()]
+    covariances = hf_1['covariances'][()]
+    weights = hf_1['weights'][()]
 
     # Close the HDF5 file
     hf_1.close()
 
-    return n_components_full, means_full, covariances_full, weights_full
+    print(f"Means : {means}\n",
+          f"Covariances : {covariances}\n",
+          f"weights : {weights}\n")
+
+    return n_components, means, covariances, weights
 
 def get_distances_from_X(start, end, middle):
 
@@ -330,11 +334,11 @@ def get_distances_from_X(start, end, middle):
 
     return distance_robot_1, distance_robot_2
 
-n_components = 2
 
-box1 = np.array([0.5,0.3])
 
-box2 = np.array([0.5,0.3])
+# box1 = np.array([0.52,0.41])
+
+# box2 = np.array([0.52,0.98])
 
 # TODO: link this to the other file so that the means and variances are automatically updated
 # means1 = np.array([[0.5021755 , 0.48001064], 
@@ -358,10 +362,17 @@ box2 = np.array([0.5,0.3])
 
 # weights2 = np.array([0.5083096399095122, 0.49169036009048783])
 
-model_fn = "Data/GMM_fit_for_D1.h5"
+# model_fn = "Data/golf_XY_D1.h5" ## flux capped at 0.8
+model_fn = "Data/golf_XY_D1_complete.h5" ## flux not capped
 
 n_components, means1, covariances1, weights1 = read_model_data(model_fn)
 n_components, means2, covariances2, weights2 = read_model_data(model_fn)
+
+n_components = 2
+# box1 = np.array([0.5,0.3])
+# box2 = np.array([0.5,0.3])
+box1 = np.array([0.0,0.0]) #np.array([0.52,0.41])
+box2 = np.array([0.0,0.0]) #np.array([0.56,0.43])
 
 P = [0.0,0.0]
 Xf = [0.5,0.6]
