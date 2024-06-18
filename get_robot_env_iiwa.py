@@ -25,12 +25,12 @@ class sim_robot_env:
         self.physicsClient.setGravity(0, 0, -9.81)
         self.physicsClient.setTimeStep(0.001)
         self.physicsClient.setRealTimeSimulation(use_sim)
-        self.physicsClient.resetDebugVisualizerCamera(cameraDistance=1.60, cameraYaw=200, cameraPitch=-25.00,
+        self.physicsClient.resetDebugVisualizerCamera(cameraDistance=1.60, cameraYaw=120, cameraPitch=-36.00,
                                             cameraTargetPosition=[0, 0, 0])
         
         self.physicsClientID = self.physicsClient._client
 
-        self.robot = p.loadURDF("kuka_iiwa/model.urdf", startPos, startOrientation, useFixedBase=1)
+        self.robot = p.loadURDF("kuka_iiwa/model7.urdf", startPos, startOrientation, useFixedBase=1)
         # self.robot = self.physicsClient.loadURDF("urdfs/franka_panda/panda.urdf", startPos, startOrientation, useFixedBase=True)
 
         '''
@@ -40,16 +40,11 @@ class sim_robot_env:
         if counter == 1:
             self.box = self.physicsClient.loadURDF("descriptions/robot_descriptions/objects_description/objects/simple_box.urdf",
                                 [0.5, 0.3, 0.2], globalScaling=1.0, useFixedBase=0)
-            # tableOrientation = self.physicsClient.getQuaternionFromEuler([0, 0, math.pi / 2])
-            # self.table = self.physicsClient.loadURDF("descriptions/robot_descriptions/objects_description/objects/table.urdf",
-                            # [1.15, 0.45, 0.0], tableOrientation, globalScaling=1.0, useFixedBase=1)
             self.physicsClient.changeDynamics(self.box, -1, mass=box_object.mass, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
                             spinningFriction=0.02, restitution=0, lateralFriction=0.3)
             self.physicsClient.changeDynamics(self.plane, -1, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
                          spinningFriction=0.02, restitution=0, lateralFriction=0.3)
-            # self.physicsClient.changeDynamics(self.table, 1, mass=10, linearDamping=0.04, angularDamping=0.04, rollingFriction=0.01,
-            #                 spinningFriction=0.02, restitution=0, lateralFriction=0.15)
-
+            
         
         self.numJoints = self.physicsClient.getNumJoints(self.robot)
 
@@ -65,18 +60,10 @@ class sim_robot_env:
         self.q_ul = np.array([2.96, 2.09, 2.96, 2.09, 2.96, 2.09, 3.05])
 
         # self.rest_pose = np.array([-0.4, 0.8, -0.1, -1.6, 0.0, 0.4, 0.0])
-        # self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, 1.75, 0.0]) # Good position for hitting
-        self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, -2.0, 0.0]) # Good position for hitting for other joints
-
-
-        # panda
-        # self.q_dot_ul = np.array([2.175, 2.175, 2.175, 2.175, 2.61, 2.61, 2.61])
-        # self.q_dot_ll = -np.array([2.175, 2.175, 2.175, 2.175, 2.61, 2.61, 2.61])
-
-        # self.q_ul = np.array([2.89, 1.76, 2.89, -0.06, 2.89, 3.75, 2.89])
-        # self.q_ll = -np.array([2.89, 1.76, 2.89, 3.07, 2.89, 0.01, 2.89])
-
-        # self.rest_pose = self.q_ll + (self.q_ul - self.q_ll) / 2 + np.array([-0.9, 0, 0, 0, math.pi/2, 0.0, 0])
+        self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, 1.75, 0.0]) # Good position for hitting
+        # self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, -2.0, 0.0]) # Good position for hitting for 5th joint
+        # self.rest_pose = np.array([-0.5, 1.75, 2.0, 0.0, 0.0, -2.0, 0.0]) # Good position for hitting for 4th joint
+        # self.rest_pose = np.array([-0.5, 1.5, 2.5, -0.5, 0.0, -2.0, 0.0]) # Good position for hitting for 3rd joint
 
     def step(self):
         self.physicsClient.stepSimulation()
@@ -90,7 +77,6 @@ class sim_robot_env:
     def get_IK_joint_position_point(self, x, point_id):
         # return self.physicsClient.calculateInverseKinematics(self.robot, point_id, x, restPoses=self.rest_pose, lowerLimits=self.q_ll, upperLimits=self.q_ul)
         return self.physicsClient.calculateInverseKinematics(self.robot, point_id, x, lowerLimits=self.q_ll, upperLimits=self.q_ul)
-
 
     def set_to_joint_position(self, q):
         for i in range(self.numJoints):
@@ -125,9 +111,20 @@ class sim_robot_env:
     def get_joint_cartesian_position(self, joint_id):
         return self.physicsClient.getLinkState(self.robot, joint_id)[4]
     
+    def get_link_com_position(self, link_id):
+        return self.physicsClient.getLinkState(self.robot, link_id)[0]
     def get_relative_link_com_position(self, link_id):
         return self.physicsClient.getLinkState(self.robot, link_id)[2]
+
+    def get_link_com_orientation_world(self, link_id):
+        return self.physicsClient.getLinkState(self.robot, link_id)[1]
     
+    def get_link_local_orientation(self, link_id):
+        return self.physicsClient.getLinkState(self.robot, link_id)[3]
+    
+    def get_link_urdf_orientation(self, link_id):
+        return self.physicsClient.getLinkState(self.robot, link_id)[5]
+        
     def get_multi_link_position(self, link_ids):
         pos = []
         all_pos = self.physicsClient.getLinkStates(self.robot, link_ids)
@@ -158,18 +155,13 @@ class sim_robot_env:
     
     def get_trans_jacobian_point(self, point_id):
         q = self.get_joint_position()
-        relative_dist = 1* np.array(self.get_relative_link_com_position(point_id))
-        relative_dist = relative_dist.tolist()
-        # print("relative dist ", relative_dist)
-        jac_t_fn, jac_r_fn = self.physicsClient.calculateJacobian(self.robot, point_id, relative_dist, q, self.zeros, self.zeros)
-        # jac_t_fn, jac_r_fn = self.physicsClient.calculateJacobian(self.robot, point_id, self.relative_ee, q, self.zeros, self.zeros)
+        jac_t_fn, jac_r_fn = self.physicsClient.calculateJacobian(self.robot, point_id, self.relative_ee, q, self.zeros, self.zeros)
         return jac_t_fn
 
     def get_rot_jacobian_point(self, point_id):
         q = self.get_joint_position()
-        relative_dist = -1* self.get_relative_link_com_position(point_id)
-
-        jac_t_fn, jac_r_fn = self.physicsClient.calculateJacobian(self.robot, point_id, relative_dist, q, self.zeros, self.zeros)
+        
+        jac_t_fn, jac_r_fn = self.physicsClient.calculateJacobian(self.robot, point_id, self.relative_ee, q, self.zeros, self.zeros)
         return jac_r_fn
 
     def get_trans_jacobian_specific(self, q_specific):
@@ -181,8 +173,7 @@ class sim_robot_env:
         return jac_r_fn
     
     def get_trans_jacobian_specific_point(self, q_specific, point_id):
-        relative_dist = self.get_relative_link_com_position(point_id)
-        jac_t_fn, jac_r_fn = self.physicsClient.calculateJacobian(self.robot, point_id, relative_dist, q_specific, self.zeros, self.zeros)
+        jac_t_fn, jac_r_fn = self.physicsClient.calculateJacobian(self.robot, point_id, self.relative_ee, q_specific, self.zeros, self.zeros)
         return jac_t_fn
 
     def get_rot_jacobian_specific_point(self, q_specific, point_id):
@@ -351,6 +342,7 @@ class sim_robot_env:
     def get_effective_inertia_point_gradient(self, direction, point_id):
         num_joints = self.numJoints
         dL_dq_dir = np.zeros((num_joints, 1))
+        zeros = np.zeros((num_joints, 1))
         dq = 0.001
         q_current = self.get_joint_position()
         eff_lambda_current = self.get_effective_inertia_specific_point(q_current, direction, point_id)
@@ -359,6 +351,7 @@ class sim_robot_env:
             q_new[l] = q_new[l] + dq
             eff_lambda_new = self.get_effective_inertia_specific_point(q_new, direction, point_id)
             dL_dq_dir[l] = (eff_lambda_new - eff_lambda_current) / dq
+        dL_dq_dir[point_id:] = zeros[point_id:]
         return dL_dq_dir
     
     def get_inverse_effective_inertia_gradient(self, direction):

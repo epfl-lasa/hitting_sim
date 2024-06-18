@@ -21,7 +21,7 @@ robot = sim_robot_env(1, box, 1)
 robot.set_to_joint_position(robot.rest_pose)
 
 #Robot ee id can be changed here
-robot.ee_id = 5
+robot.ee_id = 6
 
 ##################### DS PROPERTIES ####################################
 A = np.array([[-2, 0, 0], [0, -2, 0], [0, 0, -2]])
@@ -41,7 +41,15 @@ phi_des = 0.8
 joint limits of the robot are one source of constraints
 No other constraints are considered
 '''
-des_pose = robot.rest_pose
+start_pose = X_ref - np.array([0, 0.5, 0])
+robot.draw_point([start_pose], [[0, 0, 1]], 30, 0)
+des_pose = robot.get_IK_joint_position_point(start_pose, robot.ee_id)
+des_pose = np.array(des_pose)
+
+# des_pose = robot.rest_pose
+robot.set_to_joint_position(des_pose)
+print("des pose ", des_pose)
+
 
 q_current = np.array(robot.get_joint_position())
 
@@ -74,18 +82,16 @@ print("des pose ", des_pose)
 robot.set_to_joint_position(des_pose)
 robot.step()
 
-print(np.array(robot.get_multi_joint_position([4, 5, 6])))
 
 multi_link_pos = robot.get_multi_joint_position([0, 1, 2, 3, 4, 5, 6])
 
-for i in range(len(multi_link_pos)):
-    print("multi link pos ", multi_link_pos[i])
-    robot.draw_point([multi_link_pos[i]], [[1, 0, 0]], 30, 0)
+# for i in range(len(multi_link_pos)):
+#     print("multi link pos ", multi_link_pos[i])
+#     robot.draw_point([multi_link_pos[i]], [[1, 0, 0]], 30, 0)
 
 while(1):
     robot.set_to_joint_position(des_pose)
     robot.step()
-    # des_pose[robot.ee_id]= des_pose[robot.ee_id] + 0.1
     time.sleep(1)
     break
 
@@ -120,6 +126,8 @@ weight = robot.get_effective_inertia_point_influence_matrix(v_dir, robot.ee_id)
 
 time.sleep(5)
 
+q_dot_zeros = np.zeros(7)
+
 while 1:
     X_qp = np.array(robot.get_point_position(robot.ee_id))
     jac = np.array(robot.get_trans_jacobian_point(robot.ee_id))
@@ -127,8 +135,6 @@ while 1:
 
     '''Follow the Hitting DS and then the Linear DS'''
     if not is_hit:
-
-        
         dX = linear_hitting_ds_pre_impact(A, X_qp, X_ref, v_dir, phi_des, lambda_eff, box.mass)
         hit_dir = dX / np.linalg.norm(dX)
 
@@ -146,21 +152,24 @@ while 1:
         joint_vel = sol[:7]
 
         joint_vel = np.array(joint_vel)
+        joint_vel[robot.ee_id : ] = q_dot_zeros[robot.ee_id : ]
 
         joint_pos = q_current + joint_vel*0.001
 
         lambda_des = robot.get_effective_inertia_specific_point(joint_pos.tolist(), hit_dir, robot.ee_id)
 
-        # lambda_des = 5
+        lambda_des = 3.5
         lambda_des_list.append(lambda_des)
         lambda_eff_list.append(lambda_eff)
-        # q_dot = get_joint_velocities_qp_dir_inertia_specific_NS(dX, jac, robot, hit_dir, 0.15, lambda_eff, lambda_des)
+  
         q_dot = get_joint_velocities_qp_dir_inertia_specific_point_NS(dX, jac, robot, v_dir, 0.15, lambda_eff, lambda_des, robot.ee_id)
-
-        # print("lambda eff ", lambda_eff, "lambda des ", lambda_des, "flux ", lambda_eff/(lambda_eff + box.mass)*np.linalg.norm(jac @ q_dot))
+        q_dot[robot.ee_id : ] = q_dot_zeros[robot.ee_id : ]
+        # print(q_dot)
+        
         robot.move_with_joint_velocities(q_dot)
         robot.step()
     else:
+        print("Hit")
         q_dot = np.zeros(7)
         robot.move_with_joint_velocities(q_dot)
         robot.step()
@@ -173,7 +182,7 @@ while 1:
     state = np.concatenate((q_dot, slack_1, slack_2))
 
     # print("weight ", weight)
-
+    # print(robot.get_collision_points().size)
     # Need something more here later, this is contact detection and getting the contact point
     if(robot.get_collision_points().size != 0):
         is_hit = True
@@ -182,13 +191,6 @@ while 1:
         # hit_velocity = robot.get_ee_velocity_current()
         # hit_inertia = robot.get_effective_inertia(hit_dir)
         # hit_joint_pos = robot.get_joint_position()
-    
-    # if printed == 0 and is_hit:
-    #     print("hit point ", hit_point)
-    #     print("hit velocity ", hit_velocity)
-    #     print("hit inertia ", hit_inertia)
-    #     print("hit joint pos ", hit_joint_pos)
-    #     printed = 1
 
 
 
@@ -212,7 +214,7 @@ plt.plot(lambda_eff_list, color='orange', marker='*', linestyle='dashed',
 # Add labels and a title
 plt.xlabel('Time', fontsize=16)
 plt.ylabel('Inertia', fontsize=16)
-plt.title('Desired and achieved inertia', fontsize=20)
+plt.title('Desired and achieved inertia (Joint 7)', fontsize=20)
 plt.legend(['Desired', 'Achieved'], fontsize=16)
 plt.tick_params(axis='both', labelsize=16)
 
