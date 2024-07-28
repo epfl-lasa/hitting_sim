@@ -18,18 +18,20 @@ gmm_5 = pickle.load(open("gmm_models/gmm_5", "rb"))
 gmm_6 = pickle.load(open("gmm_models/gmm_6", "rb"))
 
 
-
+############## where to hit the object ################
 X_des = np.array([0.5, 0.4, 0.2])
 
-# robot = sim_robot(0, 1)
 
-# num_joints = 7
+###########################################################
+robot = sim_robot(0, 1)
+num_joints = 7
 
 # ###################################################
 
-# v_dir = np.array([0, 1, 0])
 
 grid = 100
-
 m_obj = np.linspace(0.1, 5, grid)
-print(m_obj)
+
+
+
+# The idea is to see that when the mass of the object increase and I have a cer
