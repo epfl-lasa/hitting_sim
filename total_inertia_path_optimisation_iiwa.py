@@ -158,7 +158,7 @@ while 1:
 
         lambda_des = robot.get_effective_inertia_specific_point(joint_pos.tolist(), hit_dir, robot.ee_id)
 
-        lambda_des = 3.5
+        # lambda_des = 3.5
         lambda_des_list.append(lambda_des)
         lambda_eff_list.append(lambda_eff)
   
