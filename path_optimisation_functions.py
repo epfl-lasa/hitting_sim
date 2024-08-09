@@ -89,13 +89,9 @@ def dir_ineq(state, jacobian, direction):
     return np.abs(dot_p - 1)
 
 
-
-
-
 '''
 Functions with the state including the joint position
 '''
-
 
 '''Cost function'''
 def vel_cost_full(state):

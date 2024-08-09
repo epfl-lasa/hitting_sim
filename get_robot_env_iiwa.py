@@ -59,12 +59,9 @@ class sim_robot_env:
         self.q_ll = -np.array([2.96, 2.09, 2.96, 2.09, 2.96, 2.09, 3.05])
         self.q_ul = np.array([2.96, 2.09, 2.96, 2.09, 2.96, 2.09, 3.05])
 
-        # self.rest_pose = np.array([-0.4, 0.8, -0.1, -1.6, 0.0, 0.4, 0.0])
-        self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, 1.75, 0.0]) # Good position for hitting
-        # self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, -2.0, 0.0]) # Good position for hitting for 5th joint
-        # self.rest_pose = np.array([-0.5, 1.75, 2.0, 0.0, 0.0, -2.0, 0.0]) # Good position for hitting for 4th joint
-        # self.rest_pose = np.array([-0.5, 1.5, 2.5, -0.5, 0.0, -2.0, 0.0]) # Good position for hitting for 3rd joint
-
+        self.rest_pose = np.array([-0.4, 0.8, -0.1, -1.6, 0.0, 0.4, 0.0])
+        # self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, 1.75, 0.0]) # Good position for hitting
+        
     def step(self):
         self.physicsClient.stepSimulation()
 

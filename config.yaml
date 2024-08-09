@@ -1,5 +1,0 @@
-zmq:
-  # ZMQ params
-  state_port: 1336
-  policy_port: 1338
-  obstacle_port: 1339
