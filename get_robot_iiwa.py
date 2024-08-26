@@ -52,7 +52,9 @@ class sim_robot:
         self.q_ul = np.array([2.96, 2.09, 2.96, 2.09, 2.96, 2.09, 3.05])
 
         # self.rest_pose = np.array([-0.4, 0.8, -0.1, -1.6, 0.0, 0.4, 0.0])
-        self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, 1.75, 0.0]) # Good position for hitting
+        # self.rest_pose = np.array([-0.48, 1.04, 0.02, -1.35, -1.92, -1.81, -0.81]) #7
+        self.rest_pose = np.array([0.035, 0.945, -0.156, -1.612, 1.667, -1.510, 0.955]) #6
+        # self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, 1.75, 0.0]) # Good position for hitting
         # self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, -2.0, 0.0]) # Good position for hitting for other joints
 
     def step(self):
@@ -68,6 +70,9 @@ class sim_robot:
         # return self.physicsClient.calculateInverseKinematics(self.robot, point_id, x, restPoses=self.rest_pose, lowerLimits=self.q_ll, upperLimits=self.q_ul)
         return self.physicsClient.calculateInverseKinematics(self.robot, point_id, x, lowerLimits=self.q_ll, upperLimits=self.q_ul)
 
+    def get_IK_joint_position_orientation_point(self, x, orientation, point_id):
+    # return self.physicsClient.calculateInverseKinematics(self.robot, point_id, x, restPoses=self.rest_pose, lowerLimits=self.q_ll, upperLimits=self.q_ul)
+        return self.physicsClient.calculateInverseKinematics(self.robot, point_id, targetPosition = x, targetOrientation=orientation, lowerLimits=self.q_ll, upperLimits=self.q_ul)
 
     def set_to_joint_position(self, q):
         for i in range(self.numJoints):

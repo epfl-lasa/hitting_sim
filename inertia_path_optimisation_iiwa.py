@@ -15,7 +15,7 @@ import functions as f
 from path_optimisation_functions import flux_ineq, vel_cost, vel_ineq, vel_cost_weight, vel_ineq_point_full, flux_ineq_point_full
 
 ################## GET THE ROBOT ######################################
-box = object.Box([0.2, 0.2, 0.2], 1.5)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
+box = object.Box([0.2, 0.2, 0.2], 0.5)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
 
 robot = sim_robot_env(1, box, 1)
 

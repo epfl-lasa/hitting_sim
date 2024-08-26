@@ -82,7 +82,7 @@ Joint_X_pos['6'] = []
 
 
 for i in joint_pos:
-    print(i)
+    print("hrere")
     robot.set_to_joint_position(joint_pos)
     
     Lambda_inv_2 = robot.get_inv_inertia_matrix_point(2)

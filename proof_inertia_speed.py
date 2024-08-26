@@ -41,6 +41,7 @@ decision_bounds = np.transpose(decision_bounds)
 
 
 for robot.ee_id in range_ee:
+    print("Joint ", robot.ee_id)
     des_pose = np.array(robot.get_IK_joint_position(X_des))
 
     j = 0
