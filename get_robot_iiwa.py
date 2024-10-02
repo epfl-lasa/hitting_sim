@@ -14,8 +14,8 @@ class sim_robot:
             mode = p.GUI
 
         self.physicsClient = bc.BulletClient(mode
-                                              , options='--background_color_red=0 --background_color_green=0' +
-                             ' --background_color_blue=0 --width=1000 --height=1000')
+                                              , options='--background_color_red=1 --background_color_green=1' +
+                             ' --background_color_blue=1 --width=1000 --height=1000')
         self.physicsClient.setAdditionalSearchPath(pybullet_data.getDataPath())
         self.physicsClient.resetSimulation()
         self.plane = self.physicsClient.loadURDF("plane_transparent.urdf")

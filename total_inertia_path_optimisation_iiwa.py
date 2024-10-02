@@ -15,7 +15,7 @@ import functions as f
 from path_optimisation_functions import flux_ineq, vel_ineq, vel_cost_weight, vel_cost_weight_generic, max_inertia, hit_constraints_function, dot_product_constraint
 
 ################## GET THE ROBOT ######################################
-box = object.Box([0.2, 0.2, 0.2], 0.5)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
+box = object.Box([0.2, 0.2, 0.2], 1.0)  # the box is a cube of size 20 cm, and it is 0.5 kg in mass
 
 robot = sim_robot_env(1, box, 1)
 robot.set_to_joint_position(robot.rest_pose)
@@ -158,11 +158,11 @@ while 1:
 
         lambda_des = robot.get_effective_inertia_specific_point(joint_pos.tolist(), hit_dir, robot.ee_id)
 
-        lambda_des = 3.5
+        # lambda_des = 4.0
         lambda_des_list.append(lambda_des)
         lambda_eff_list.append(lambda_eff)
   
-        q_dot = get_joint_velocities_qp_dir_inertia_specific_point_NS(dX, jac, robot, v_dir, 0.15, lambda_eff, lambda_des, robot.ee_id)
+        q_dot = get_joint_velocities_qp_dir_inertia_specific_point_NS(dX, jac, robot, v_dir, 1.0, lambda_eff, lambda_des, robot.ee_id)
         q_dot[robot.ee_id : ] = q_dot_zeros[robot.ee_id : ]
         # print(q_dot)
         

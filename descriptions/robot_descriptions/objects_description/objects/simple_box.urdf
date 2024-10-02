@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <robot name="simple_box">
+  <material name="brown">
+      <color rgba="0.4 0.2 0.0 1.0"/>
+  </material>
   <link name="box">
+   
     <inertial>
       <!-- <origin xyz="0.0 0 0" /> -->
       <mass value="0.5" />
@@ -11,6 +15,7 @@
       <geometry>
         <box size="0.2 0.2 0.2" />
       </geometry>
+      <material name="brown"/>
     </visual>
     <!-- <surface>
       <friction>

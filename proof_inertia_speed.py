@@ -39,7 +39,7 @@ range_ee = range(6, 3, -1)
 decision_bounds = np.stack((robot.q_dot_ll, robot.q_dot_ul))
 decision_bounds = np.transpose(decision_bounds)
 
-
+time.sleep(10)
 for robot.ee_id in range_ee:
     print("Joint ", robot.ee_id)
     des_pose = np.array(robot.get_IK_joint_position(X_des))
@@ -58,7 +58,7 @@ for robot.ee_id in range_ee:
         
         fluxes[j, robot.ee_id] = (lambdas[j, robot.ee_id] / (lambdas[j, robot.ee_id] + 2)) * speeds[j, robot.ee_id]
         
-        # time.sleep(0.05)
+        time.sleep(0.05)
         j += 1
 
 # Plot the inertia of the robot at each joint

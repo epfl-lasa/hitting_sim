@@ -14,8 +14,8 @@ class sim_robot_env:
             mode = p.GUI
 
         self.physicsClient = bc.BulletClient(mode
-                                              , options='--background_color_red=0 --background_color_green=0' +
-                             ' --background_color_blue=0 --width=1000 --height=1000')
+                                              , options='--background_color_red=1 --background_color_green=1' +
+                             ' --background_color_blue=1 --width=1000 --height=1000')
         self.physicsClient.setAdditionalSearchPath(pybullet_data.getDataPath())
         self.physicsClient.resetSimulation()
         self.plane = self.physicsClient.loadURDF("plane_transparent.urdf")
@@ -376,7 +376,7 @@ class sim_robot_env:
     def get_effective_inertia_point_influence_matrix(self, direction, point_id):
         dL_dq_dir = self.get_effective_inertia_point_gradient(direction, point_id)
         # dL_dq_dir[dL_dq_dir < 0] = 0
-        # # dL_dq_dir[dL_dq_dir > 0] = 1
+        # dL_dq_dir[dL_dq_dir > 0] = 1
         return np.array(np.diag(dL_dq_dir.flatten()))
     
     def get_velocity_manipulability_metric(self):
