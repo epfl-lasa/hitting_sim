@@ -162,7 +162,7 @@ while 1:
         robot.step()
     else:
         print("Hit")
-        q_dot = np.zeros(7)
+        q_dot = np.zeros(10)
         robot.move_with_joint_velocities(q_dot)
         robot.step()
 
