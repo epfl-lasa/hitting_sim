@@ -29,6 +29,14 @@ def vel_ineq(state, jacobian, dx):
     
     return jacobian @ joint_vel - dx - slack_1
 
+def vel_ineq_10(state, jacobian, dx):
+    joint_vel = state[:10]
+    slack_1 = state[10:13]
+    slack_2 = state[13:]
+    # jacobian = manipulator.get_trans_jacobian_specific(joint_pos.tolist())
+    
+    return jacobian @ joint_vel - dx - slack_1
+
 '''Generic Cost function'''
 def vel_cost_generic(state):
     n = len(state) - 4
@@ -75,6 +83,17 @@ def flux_ineq(state, lambda_eff, jac, phi_des, mass_box):
 
     return flux - phi_des - slack_2
 
+
+def flux_ineq_10(state, lambda_eff, jac, phi_des, mass_box):
+
+    joint_vel = state[:10]
+    slack_1 = state[10:13]
+    slack_2 = state[13:]
+    vel = jac @ joint_vel
+    speed = np.linalg.norm(vel)
+    flux = (lambda_eff/(lambda_eff + mass_box)) * speed  # should be a scalar
+
+    return flux - phi_des - slack_2
 '''
 Alignment of the direction is also important here
 '''

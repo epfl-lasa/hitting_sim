@@ -76,6 +76,14 @@ def get_joint_velocities_qp_dir_inertia_specific_point_NS(fx, jacobian, manipula
     q_dot_return = q_dot_1 + q_dot_2.reshape(7, )
     return q_dot_return
 
+def get_joint_velocities_qp_dir_inertia_specific_point_NS_10(fx, jacobian, manipulator, direction, alpha, l_dir, l_des, point_id):
+
+    q_dot_1 = get_joint_velocities_qp(fx, jacobian, manipulator)
+    N = (np.identity(10) - np.linalg.pinv(jacobian) @ jacobian)
+    dl_dq_dir = manipulator.get_effective_inertia_point_gradient(direction, point_id)
+    q_dot_2 =  -alpha * (N @ dl_dq_dir * (l_dir - l_des))
+    q_dot_return = q_dot_1 + q_dot_2.reshape(10, )
+    return q_dot_return
 
 
 def get_joint_velocities_qp_dir_inertia_NS(fx, jacobian, manipulator, direction, alpha):
