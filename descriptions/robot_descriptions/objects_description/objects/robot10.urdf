@@ -335,7 +335,7 @@
     <parent link="link_9"/>
     <child link="link_10"/>
     <origin xyz="0 0 0.1" rpy="0 0 0"/>
-    <axis xyz="0 0 1"/>
+    <axis xyz="1 0 0"/>
     <limit lower="-3.14" upper="3.14" effort="10" velocity="2"/>
   </joint>
 
