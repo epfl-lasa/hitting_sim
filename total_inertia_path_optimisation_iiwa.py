@@ -21,7 +21,7 @@ robot = sim_robot_env(1, box, 1)
 robot.set_to_joint_position(robot.rest_pose)
 
 #Robot ee id can be changed here
-robot.ee_id = 6
+robot.ee_id = 9
 
 ##################### DS PROPERTIES ####################################
 A = np.array([[-2, 0, 0], [0, -2, 0], [0, 0, -2]])
@@ -214,7 +214,7 @@ plt.plot(lambda_eff_list, color='orange', marker='*', linestyle='dashed',
 # Add labels and a title
 plt.xlabel('Time', fontsize=16)
 plt.ylabel('Inertia', fontsize=16)
-plt.title('Desired and achieved inertia (Joint 7)', fontsize=20)
+plt.title('Desired and achieved inertia (Joint 10)', fontsize=20)
 plt.legend(['Desired', 'Achieved'], fontsize=16)
 plt.tick_params(axis='both', labelsize=16)
 

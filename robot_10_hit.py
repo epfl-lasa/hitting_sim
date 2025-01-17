@@ -21,7 +21,7 @@ box = object.Box([0.4, 0.4, 0.2], 0.5)  # the box is a cube of size 20 cm, and i
 robot = sim_robot_env(1, box, 1)
 robot.set_to_joint_position(robot.rest_pose)
 
-robot.ee_id = 9
+robot.ee_id = 7
 
 ##################### DS PROPERTIES ####################################
 A = np.array([[-2, 0, 0], [0, -2, 0], [0, 0, -2]])
@@ -114,7 +114,7 @@ state = np.concatenate((joint_vel, slack_1, slack_2))
 q_current = np.array(robot.get_joint_position())
 weight = robot.get_effective_inertia_point_influence_matrix(v_dir, robot.ee_id)
 
-time.sleep(5)
+time.sleep(15)
 
 q_dot_zeros = np.zeros(10)
 

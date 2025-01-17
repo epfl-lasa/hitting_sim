@@ -25,7 +25,7 @@ class sim_robot_env:
         self.physicsClient.setGravity(0, 0, -9.81)
         self.physicsClient.setTimeStep(0.001)
         self.physicsClient.setRealTimeSimulation(use_sim)
-        self.physicsClient.resetDebugVisualizerCamera(cameraDistance=1.60, cameraYaw=120, cameraPitch=-36.00,
+        self.physicsClient.resetDebugVisualizerCamera(cameraDistance=1.60, cameraYaw=76.4, cameraPitch=-20.80,
                                             cameraTargetPosition=[0, 0, 0])
         
         self.physicsClientID = self.physicsClient._client
@@ -53,14 +53,17 @@ class sim_robot_env:
         self.relative_ee = [0, 0, 0]
 
         # iiwa
-        self.q_dot_ul = np.array([3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14])
-        self.q_dot_ll = -np.array([3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14])
+        self.q_dot_ul = 0.6*np.array([3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14])
+        self.q_dot_ll = -0.6*np.array([3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14])
 
-        self.q_ll = -np.array([3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14])
-        self.q_ul = np.array([3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14])
+        self.q_ll = -0.6*np.array([3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14])
+        self.q_ul = 0.6*np.array([3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14])
 
         # self.rest_pose = np.array([-0.4, 0.8, -0.1, -1.6, 0.0, 0.4, 0.0])
         self.rest_pose = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        self.rest_pose = np.array([-0.02729058, 1.02384872, 0.37093013, -0.02071729, 0.592722, 0.1585526, 0.20534982, 0., 1.3, 0.])
+        self.rest_pose = np.array([-0.02729058, 1.02384872, 0.37093013, -0.02071729, 0.592722, 0.1585526, 0.20534982, 0., 0., 0.])
+
         # self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, 1.75, 0.0]) # Good position for hitting
         # self.rest_pose = np.array([-0.6, 0.8, 0.3, -1.6, 1.0, -2.0, 0.0]) # Good position for hitting for 5th joint
         # self.rest_pose = np.array([-0.5, 1.75, 2.0, 0.0, 0.0, -2.0, 0.0]) # Good position for hitting for 4th joint
