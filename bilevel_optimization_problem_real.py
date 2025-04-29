@@ -203,7 +203,7 @@ def plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap,colo
                 X1 = [x0_val, x1_val]
                 pdf_values[j, i] = -fun1(X_opt, X1)
 
-        plt.imshow(pdf_values, extent=[x_limits[0], x_limits[2], y_limits[0], y_limits[2]], origin='lower', cmap='viridis')
+        plt.imshow(pdf_values, extent=[x_limits[0], x_limits[2], y_limits[0], y_limits[2]], origin='lower', cmap='Blues_r')
 
     if colormap1:
         x0_range = np.linspace(x_limits[0], x_limits[2], 100)
@@ -217,7 +217,7 @@ def plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap,colo
                 X_try[:2] = X1
                 pdf_values[j, i] = -fun1(X_try, Xf)
 
-        plt.imshow(pdf_values, extent=[x_limits[0], x_limits[2], y_limits[0], y_limits[2]], origin='lower', cmap='viridis')
+        plt.imshow(pdf_values, extent=[x_limits[0], x_limits[2], y_limits[0], y_limits[2]], origin='lower', cmap='Blues_r')
 
     # Plot initial position of box
     ax.scatter(P[0],P[1], s=100, marker='+',color='g', label ='Xi')
@@ -299,6 +299,117 @@ def plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap,colo
     ax.legend()
     plt.show()
 
+def plot_total(X_opt, environment, x_limits, y_limits, table_direction, colormap, colormap1):
+    fig, ax = plt.subplots()
+
+    # if colormap:
+    #     x0_range = np.linspace(x_limits[0], x_limits[2], 100)
+    #     x1_range = np.linspace(y_limits[0], y_limits[2], 100)
+
+    #     pdf_values = np.zeros((len(x0_range), len(x1_range)))
+    #     for i, x0_val in enumerate(x0_range):
+    #         for j, x1_val in enumerate(x1_range):
+    #             X1 = [x0_val, x1_val]
+    #             pdf_values[j, i] = fun1(X_opt, X1)*bilevel_pdf_first_reach(X_opt)
+
+    #     plt.imshow(pdf_values, extent=[x_limits[0], x_limits[2], y_limits[0], y_limits[2]], origin='lower', cmap='Blues_r')
+
+    # if colormap1:
+    #     x0_range = np.linspace(x_limits[0], x_limits[2], 100)
+    #     x1_range = np.linspace(y_limits[0], y_limits[2], 100)
+
+    #     pdf_values = np.zeros((len(x0_range), len(x1_range)))
+    #     for i, x0_val in enumerate(x0_range):
+    #         for j, x1_val in enumerate(x1_range):
+    #             X1 = [x0_val, x1_val]
+    #             pdf_values[j, i] = fun1(X_opt, X1)*bilevel_pdf_first_reach(X_opt)
+
+    #     plt.imshow(pdf_values, extent=[x_limits[0], x_limits[2], y_limits[0], y_limits[2]], origin='lower', cmap='Blues_r')
+
+
+
+    # Plot initial position of box
+    ax.scatter(P[0],P[1], s=100, marker='+',color='g', label ='Xi')
+    ax.scatter(X_opt[0],X_opt[1], s=100, marker='+',color='b', label ='Xm')
+
+    ax.plot([P[0],X_opt[0]],[P[1],X_opt[1]],color='k', linestyle='dashed')
+    ax.plot([X_opt[0],Xf[0]],[X_opt[1],Xf[1]],color='k', linestyle='dashed')
+
+    if environment:
+        if table_direction[0] == 'up' and table_direction[1] == 'right':
+            ax.plot(x_limits[0]*np.ones(2),[y_limits[0],y_limits[2]],color='k')
+            ax.plot(x_limits[1]*np.ones(2),[y_limits[0],y_limits[1]],color='k')
+            ax.plot(x_limits[2]*np.ones(2),[y_limits[1],y_limits[2]],color='k') 
+
+            ax.plot([x_limits[0],x_limits[2]],y_limits[2]*np.ones(2),color='k')
+            ax.plot([x_limits[1],x_limits[2]],y_limits[1]*np.ones(2),color='k')
+            ax.plot([x_limits[0],x_limits[1]],y_limits[0]*np.ones(2),color='k', label ='Table')
+        elif table_direction[0] == 'up' and table_direction[1] == 'left':
+            ax.plot(x_limits[0]*np.ones(2),[y_limits[1],y_limits[2]],color='k')
+            ax.plot(x_limits[1]*np.ones(2),[y_limits[0],y_limits[1]],color='k')
+            ax.plot(x_limits[2]*np.ones(2),[y_limits[0],y_limits[2]],color='k') 
+
+            ax.plot([x_limits[0],x_limits[2]],y_limits[2]*np.ones(2),color='k')
+            ax.plot([x_limits[0],x_limits[1]],y_limits[1]*np.ones(2),color='k')
+            ax.plot([x_limits[1],x_limits[2]],y_limits[0]*np.ones(2),color='k', label ='Table')
+        elif table_direction[0] == 'down' and table_direction[1] == 'left':
+            ax.plot(x_limits[0]*np.ones(2),[y_limits[0],y_limits[1]],color='k')
+            ax.plot(x_limits[1]*np.ones(2),[y_limits[1],y_limits[2]],color='k')
+            ax.plot(x_limits[2]*np.ones(2),[y_limits[0],y_limits[2]],color='k') 
+
+            ax.plot([x_limits[1],x_limits[2]],y_limits[2]*np.ones(2),color='k')
+            ax.plot([x_limits[0],x_limits[1]],y_limits[1]*np.ones(2),color='k')
+            ax.plot([x_limits[0],x_limits[2]],y_limits[0]*np.ones(2),color='k', label ='Table')
+        else:
+            ax.plot(x_limits[0]*np.ones(2),[y_limits[0],y_limits[2]],color='k')
+            ax.plot(x_limits[1]*np.ones(2),[y_limits[1],y_limits[2]],color='k')
+            ax.plot(x_limits[2]*np.ones(2),[y_limits[0],y_limits[1]],color='k') 
+
+            ax.plot([x_limits[0],x_limits[1]],y_limits[2]*np.ones(2),color='k')
+            ax.plot([x_limits[1],x_limits[2]],y_limits[1]*np.ones(2),color='k')
+            ax.plot([x_limits[0],x_limits[2]],y_limits[0]*np.ones(2),color='k', label ='Table')
+
+
+    R1 = rotation_z(X_opt[3])   
+
+    R2 = rotation_z(X_opt[2])
+    new_means1=[]
+    new_covariances1=[]
+    new_means2=[]
+    new_covariances2=[]
+    for i in range(n_components):
+        R1 = np.squeeze(R1)
+        mean1 = means1[i] + (P-box1)
+        new_mean1 = R1 @ (mean1-P) + P
+        new_covariance1 = R1 @ covariances1[i] @ R1.T
+        new_means1.append(new_mean1)
+        new_covariances1.append(new_covariance1)
+
+        R2 = np.squeeze(R2)
+        mean2 = means2[i] + (X_opt[:2]-box2)
+        new_mean2 = R2 @ (mean2-X_opt[:2]) + X_opt[:2] 
+        new_covariance2 = R2 @ covariances2[i] @ R2.T
+        new_means2.append(new_mean2)
+        new_covariances2.append(new_covariance2)
+
+
+        ellipse.plot_ellipse(new_mean1,new_covariance1,ax)
+        ellipse.plot_ellipse(new_mean2,new_covariance2,ax)
+
+    ax.scatter(Xf[0],Xf[1], s=100, marker='+',color='k', label ='Xf')
+
+
+    # plt.xlabel(', fontsize=16)
+    # plt.ylabel('Y-axis', fontsize=16)
+    plt.xticks(fontsize=20)
+    plt.yticks(fontsize=20)
+
+    plt.title(f'Total optimisation results to reach Xf = {Xf}', fontsize=20)
+
+
+    ax.legend(fontsize=20)
+    plt.show()
+
 def bilevel_find_sol(environment,x_limits,y_limits,direction, intersection_threshold):#P,Xf,means2, covariances2,n_components):  
     if environment:
         cons = bilevel_constraints(Xf, x_limits, y_limits, direction)
@@ -347,31 +458,6 @@ def get_distances_from_X(start, end, middle):
 
     return distance_robot_1, distance_robot_2
 
-# box1 = np.array([0.52,0.41])
-
-# box2 = np.array([0.52,0.98])
-
-# TODO: link this to the other file so that the means and variances are automatically updated
-# means1 = np.array([[0.5021755 , 0.48001064], 
-#                   [0.48307691, 0.73329577]])
-
-# covariances1 = np.array([[[0.00026569, 0.00025749],
-#                         [0.00025749, 0.00407336]],
-#                         [[ 0.00184485, -0.00123859],
-#                         [-0.00123859,  0.01655933]]])
-
-# weights1 = np.array([0.5083096399095122, 0.49169036009048783])
-
-
-# means2 = np.array([[0.5021755 , 0.48001064], 
-#                   [0.48307691, 0.73329577]])
-
-# covariances2 = np.array([[[0.00026569, 0.00025749],
-#                         [0.00025749, 0.00407336]],
-#                         [[ 0.00184485, -0.00123859],
-#                         [-0.00123859,  0.01655933]]])
-
-# weights2 = np.array([0.5083096399095122, 0.49169036009048783])
 
 # model_fn = "Data/golf_XY_D1.h5" ## flux capped at 0.8
 model_fn = "Data/golf_XY_D1_complete.h5" ## flux not capped
@@ -380,10 +466,8 @@ n_components, means1, covariances1, weights1 = read_model_data(model_fn)
 n_components, means2, covariances2, weights2 = read_model_data(model_fn)
 
 n_components = 2
-# box1 = np.array([0.5,0.3])
-# box2 = np.array([0.5,0.3])
-box1 = np.array([0.0,0.0]) #np.array([0.52,0.41])
-box2 = np.array([0.0,0.0]) #np.array([0.56,0.43])
+box1 = np.array([0.0,0.0]) 
+box2 = np.array([0.0,0.0]) 
 
 P = [0.0,0.0]
 Xf = [0.5,0.6]
@@ -392,12 +476,6 @@ y_limits = [-0.2, 0.4, 0.9]
 table_direction = ['up','right']
 environment = True
 
-# P = [0.2,0.0]
-# Xf = [0.7,0.3]
-# x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-# y_limits = [-0.2, 0.2, 0.4]
-# table_direction = ['up','right']
-# environment = True
 
 # P = [0.3,-0.18]
 # Xf = [-0.0,0.3]
@@ -406,43 +484,8 @@ environment = True
 # table_direction = ['up','left']
 # environment = True
 
-# P = [0.05,0.38]
-# Xf = [0.7,0.0]
-# x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-# y_limits = [-0.2, 0.2, 0.4]
-# table_direction = ['down','right']
-# environment = True
-
-# P = [0.5,0.38]
-# Xf = [0.0,0.0]
-# x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-# y_limits = [-0.2, 0.15, 0.4]
-# table_direction = ['down','left']
-# environment = True
-
-# P = [0.0,0.0]
-# Xf = [1.0,0.7]
-# x_limits = [-0.25, 0.4, 1.2]  #[-0.25, 0.5]
-# y_limits = [-0.2, 0.4, 0.9]
-# table_direction = ['up','right']
-# environment = True
-
-# P = [0.0,0.0]
-# Xf = [1.55,0.2]
-# x_limits = [-0.25, 1.9, 1.9]
-# y_limits = [-0.2, 0.4, 0.4]
-# table_direction = ['up','right']
-# environment = True
-
-# P = [0.0,0.0]
-# Xf = [0.7,0.3]
-# x_limits = [-0.25, 0.25, 0.9]  #[-0.25, 0.5]
-# y_limits = [-0.2, 0.2, 0.4]
-# table_direction = ['up','right']
-# environment = True
-
 colormap = True
-colormap1 = True
+colormap1 = False
 intersection_threshold = 0.2
 
 
@@ -461,6 +504,6 @@ print("objective function = ", cost_fun_bilevel(X_opt))
 
 get_distances_from_X(P, Xf, X_opt[:2])
 
-plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap,colormap1)
-# plot_new(X_opt, environment, x_limits, y_limits, table_direction, colormap)
+# plot_(X_opt, environment, x_limits, y_limits, table_direction, colormap,colormap1)
+plot_total(X_opt, environment, x_limits, y_limits, table_direction, colormap, colormap1)
 
